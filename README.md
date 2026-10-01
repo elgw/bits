@@ -12,7 +12,7 @@ variable bits per element array
 - get
 
 ### **rank9**
-- construction in $`\mathcal{O}(n)`$ time, using $`\mathcal(o)(n/4 + 128)`$
+- construction in $`\mathcal{O}(n)`$ time, using $`\mathcal{O}(n/4)`$
   bits extra memory.
 - rank1, in $`\mathcal{O}(n)`$.
 - select1_bs, in $`\mathcal{O}(\log n)`$ time.
