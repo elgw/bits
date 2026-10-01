@@ -105,3 +105,12 @@ void bitarray_reset(bitarray * B)
 {
     memset(B->data, 0, B->mem_allocated);
 }
+
+int pos_first_one(const u64 w){
+    // TODO: Need to pair with popcount or check for 0?
+    // 0->64
+    // 1->63
+    // ...
+    // 134217728 -> 36
+    return __builtin_ctzl(w) + 1;
+}

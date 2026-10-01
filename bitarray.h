@@ -39,3 +39,6 @@ i32 bitarray_select1(const bitarray * B, const u64 n);
 
 // set all bits to 0
 void bitarray_reset(bitarray * );
+
+// probably better to define as static where needed
+int pos_first_one(const u64 w);

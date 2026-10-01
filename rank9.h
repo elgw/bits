@@ -6,6 +6,7 @@
 typedef uint64_t u64;
 typedef uint8_t u8;
 
+// 128 bits indexes 512 bits of the binary array
 typedef struct {
     u64 rankp; // 1 64-bit number
     u64 seven; // 7 9-bit numbers
@@ -13,8 +14,9 @@ typedef struct {
 
 typedef struct {
     rank9_bin * bin;
-    u64 * bits;
+    u64 * bits; // owned by the caller and not freed after use
     u64 nbit;
+    u64 n_one; // Number of 1's
 } rank9;
 
 // nbit needs to be a multiple of 64*8 = 512
@@ -23,9 +25,14 @@ rank9 * rank9_init(u64 * bits, u64 nbit);
 // rank_1(r9, b)
 u64 rank9_get(const rank9 * r9, u64 b);
 
+// select1 implemented by binary search
+// returns non-zero if b == 0 or b > r9->n_ones
+int rank9_select1_bs(const rank9 *, u64 b, u64 * select1);
+
 void rank9_free(rank9 * r9);
 
 void rank9_print(const rank9 * r9);
+
 
 // should be the more cache friendly version
 // faster then a dense array around at around 1M elements
@@ -72,14 +79,14 @@ typedef struct {
   // bin[k+1].pos - pos
   // if the range spans more than 32 bits per argument
   // then we can afford to store a lookup table.
-  
-  // If there are 
-  
+
+  // If there are
+
   // if the bin is dense, we just need some offsets,
   // and then need to perform a linear scan from the offsets
   // since we could use a linear scan (up to a specific number of u64s)
   // we can store offsets for every k2 argument.
-  
+
 } select9_bin;
 
 typedef struct {

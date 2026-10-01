@@ -19,15 +19,6 @@ typedef struct {
     u32 mem_allocated;
 } select1;
 
-int pos_first_one(const u64 w){
-    // TODO: Need to pair with popcount or check for 0?
-    // 0->64
-    // 1->63
-    // ...
-    // 134217728 -> 36
-    return __builtin_ctzl(w) + 1;
-
-}
 
 // An auxilary structure that can be used together with
 // an existing bitarray to calculate select1/rank1 in

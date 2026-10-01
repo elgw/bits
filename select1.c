@@ -18,7 +18,7 @@ select1 * select1_new(bitarray * B)
 
     u32 l = pow(ceil(log(B->n)/2), 2);
     S->l = l;
-    printf("select1: n = %u, l = %u\n", B->n, l);
+    printf("select1: n = %lu, l = %u\n", B->n, l);
     u32 n_first = ceil(B->n/l)+1;
     printf("n_first = %u\n", n_first);
     size_t first_size = n_first*sizeof(u32);

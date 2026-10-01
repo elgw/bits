@@ -1,3 +1,7 @@
+## Building
+
+-  Build on GCC 13.3.0 and clang 18.1.3 under x86_64-pc-linux-gnu.
+
 ## Contents
 
 ### **bitarray**

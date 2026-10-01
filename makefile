@@ -1,6 +1,6 @@
 # https://www.gnu.org/software/make/manual/make.html
 
-CFLAGS = -Wall -Wextra
+CFLAGS = -Wall -Wextra -Wconversion
 LDFLAGS+=-lm
 
 OPT?=0
