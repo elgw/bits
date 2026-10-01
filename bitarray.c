@@ -6,8 +6,7 @@
 #include <string.h>
 
 #include "bitarray.h"
-
-
+ 
 bitarray * bitarray_new(u64 n)
 {
     bitarray * B = malloc(sizeof(bitarray));
@@ -59,14 +58,14 @@ void bitarray_set(bitarray * B, const u64 n, const u8 value)
     }
 }
 
-i32 bitarray_rank1(const bitarray * B, const u64 n)
+u64 bitarray_rank1(const bitarray * B, const u64 n)
 {
     u64 nfound = 0;
     u64 nw = n/64;
     u64 nbit = n - nw*64;
     // count ones in full words
     for(u64 w = 0; w < nw; w++) {
-        nfound += __builtin_popcountl(B->data[w]);
+      nfound += (u64) __builtin_popcountl(B->data[w]);
     }
     // count remaining bits
     for(u64 i = 0; i <= nbit; i++){
@@ -75,7 +74,7 @@ i32 bitarray_rank1(const bitarray * B, const u64 n)
     return nfound;
 }
 
-i32 bitarray_select1(const bitarray * B, const u64 n)
+u64 bitarray_select1(const bitarray * B, const u64 n)
 {
     // here we should do as in rank1, i.e.,
     // first loop over words

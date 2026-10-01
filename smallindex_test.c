@@ -25,13 +25,13 @@ static void test_bit_array(){
     size_t n = 399;
     uint32_t * R = malloc(n*sizeof(uint32_t));
     for(u64 kk = 0; kk < n; kk++){
-        R[kk] = rand() % 2;
+      R[kk] = (u32) rand() % 2;
     }
 
     bitarray * B = bitarray_new(n);
 
     for(u64 kk = 0; kk < n; kk++){
-        bitarray_set(B, kk, R[kk]);
+      bitarray_set(B, kk, (u8) R[kk]);
         assert(bitarray_get(B, kk) == R[kk]);
     }
 
@@ -44,15 +44,15 @@ static void test_bit_array(){
     free(R);
 }
 
-static void test_varray(size_t n, int bits){
+static void test_varray(u64 n, int bits){
     printf("-- test_varray, n= %zu, bits = %d\n", n, bits);
     uint32_t * R = malloc(n*sizeof(uint32_t));
-    u32 max = pow(2, bits);
+    u32 max = (u32) pow(2, bits);
     for(u64 kk = 0; kk < n; kk++){
-        R[kk] = rand() % max;
+      R[kk] = (u32) rand() % max;
     }
 
-    varray * V = varray_new(n, bits);
+    varray * V = varray_new(n, (u32) bits);
 
     for(u64 kk = 0; kk < n; kk++){
         varray_set(V, kk, R[kk]);
@@ -68,13 +68,13 @@ static void test_varray(size_t n, int bits){
 }
 
 static void test_bitarray_rank1(void){
-    size_t n = 512*4;
+    u64 n = 512*4;
     printf("-- test_bitarray_rank1, n=%zu\n", n);
     u8 * A = calloc(n, sizeof(u8));
     u32 * R1 = calloc(n, sizeof(u32));
     bitarray * B = bitarray_new(n);
     u32 nset = 0;
-    u32 nshow = n;
+    u32 nshow = (u32) n;
     nshow > 20 ? nshow = 20 : 0;
 
     for(u64 kk = 0; kk < n; kk++){
@@ -106,7 +106,7 @@ static void test_bitarray_rank1(void){
     printf("\n");
     printf("ba. R1 = ");
     for(u32 kk = 0; kk < nshow_select; kk++){
-        printf("%d ", bitarray_rank1(B, kk));
+        printf("%lu ", bitarray_rank1(B, kk));
     }
     printf("\n");
     printf("r9. R1 = ");
@@ -116,7 +116,7 @@ static void test_bitarray_rank1(void){
     printf("\n");
 
     for(u32 kk = 1; kk < nset; kk++){
-        assert(bitarray_rank1(B, kk) == (i32) R1[kk]);
+        assert(bitarray_rank1(B, kk) == (u64) R1[kk]);
         assert(rank9_get(r9, kk) ==  R1[kk]);
     }
 
@@ -136,7 +136,7 @@ static void benchmark_rank9_vs_lut(const u64 n){
             bitarray_set(B, kk, 1);
             nset++;
         }
-        R1[kk] = nset;
+        R1[kk] = (u32) nset;
     }
 
     rank9 * r9 = rank9_init((u64*) B->data, n);
@@ -154,7 +154,7 @@ static void benchmark_rank9_vs_lut(const u64 n){
     u32 cpuid;
     for(u64 ii = 0; ii < 1e7; ii++)
     {
-        idx = rand() % (n-1);
+      idx = (u64) rand() % (n-1);
 
         t0 = __rdtscp(&cpuid);
         rk_a += R1[idx];
@@ -183,13 +183,13 @@ static void benchmark_rank9_vs_lut(const u64 n){
 }
 
 static void test_bitarray_select1(void){
-    size_t n = 1000;
+    u64 n = 1000;
     printf("-- test_bitarray_select1, n=%zu\n", n);
     u8 * A = calloc(n, sizeof(u8));
     u32 * S1 = calloc(n, sizeof(u32));
     bitarray * B = bitarray_new(n);
     u32 nset = 0;
-    u32 nshow = n;
+    u32 nshow = (u32) n;
     nshow > 20 ? nshow = 20 : 0;
 
     for(u64 kk = 0; kk < n; kk++){
@@ -208,7 +208,7 @@ static void test_bitarray_select1(void){
 
     for(u64 kk = 0; kk < n; kk++){
         if(A[kk] == 1){
-            S1[++pos] = kk;
+	  S1[++pos] = (u32) kk;
         }
     }
 
@@ -224,12 +224,12 @@ static void test_bitarray_select1(void){
     printf("\n");
     printf("ba. S1 = ");
     for(u32 kk = 0; kk < nshow_select; kk++){
-        printf("%d ", bitarray_select1(B, kk));
+        printf("%lu ", bitarray_select1(B, kk));
     }
     printf("\n");
 
     for(u32 kk = 1; kk < nset; kk++){
-        assert(bitarray_select1(B, kk) == (i32) S1[kk]);
+        assert(bitarray_select1(B, kk) == (u64) S1[kk]);
     }
 
     bitarray_free(B);
@@ -239,13 +239,13 @@ static void test_bitarray_select1(void){
 
 
 static void test_select1(void){
-    size_t n = 1000;
+    u64 n = 1000;
     printf("-- test_select1 n=%zu\n", n);
     u8 * A = calloc(n, sizeof(u8));
     u32 * REF = calloc(n, sizeof(u32));
     bitarray * B = bitarray_new(n);
     u32 nset = 0;
-    u32 nshow = n;
+    u32 nshow = (u32) n;
     nshow > 20 ? nshow = 20 : 0;
 
     for(u64 kk = 0; kk < n; kk++){
@@ -268,7 +268,7 @@ static void test_select1(void){
     printf("\n");
     printf("ba. S1 = ");
     for(u32 kk = 0; kk < nshow_select; kk++){
-        printf("%u ", bitarray_select1(B, kk));
+        printf("%lu ", bitarray_select1(B, kk));
     }
     printf("\n");
     printf("s1. S1 = ");
@@ -296,7 +296,7 @@ static void test_eliasfano(void){
     A[0] = 1;
     for(u32 kk = 1; kk < n; kk++)
     {
-        A[kk] = A[kk-1] + 1 + rand() % 3;
+      A[kk] = A[kk-1] + 1 + (u32) (rand() % 3);
     }
 #else
     A[0] = 2; A[1] = 3; A[2] = 5; A[3] = 7;
@@ -329,7 +329,7 @@ void dummy(void){
     for(int kk = 0; kk < 64; kk++)
     {
         bitarray_reset(B);
-        bitarray_set(B, kk, 1); // fills from right to left...
+        bitarray_set(B, (u64) kk, 1); // fills from right to left...
         printf("bit %d: %lu (%d)\n", kk, B->data[0],
                __builtin_ctzl((u64) B->data[0]));
     }
@@ -347,7 +347,7 @@ int main(int argc, char ** argv)
             }
         }
     }
-    srand(time(NULL));
+    srand((u32) time(NULL));
     for(int kk = 0; kk < 10; kk++){
         test_bit_array();
     }

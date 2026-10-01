@@ -16,7 +16,7 @@ typedef struct {
     u32 * first;
     u32 k;
     u8 * second;
-    u32 mem_allocated;
+    u64 mem_allocated;
 } select1;
 
 

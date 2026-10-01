@@ -2,16 +2,16 @@
 #include <stdio.h>
 #include <string.h>
 #include "rank9.h"
-
+ 
 static u64 count_bits_u64(const u64 B){
-    return __builtin_popcountl(B);
+  return (u64) __builtin_popcountl(B);
 }
 
 static u64 count_n_bits_u64(u64 B, u64 n)
 {
     if(n == 0){ return 0;}
     u64 T = B  << (64-n); // undefined to shift by 64 bits
-    return __builtin_popcountl(T);
+    return (u64) __builtin_popcountl(T);
 }
 
 rank9 * rank9_init(u64 * bits, u64 nbit)
@@ -32,7 +32,7 @@ rank9 * rank9_init(u64 * bits, u64 nbit)
         count += count_bits_u64(bits[bb*8]);
         u64 seven = 0;
         //printf("count=%lu\n", count);
-        for(int ll = 1; ll < 8; ll++){
+        for(u64 ll = 1; ll < 8; ll++){
             seven = seven << 9;
             seven = seven | (count - r9->bin[bb].rankp);
             //printf("%lu\n", seven % 256);
@@ -40,7 +40,16 @@ rank9 * rank9_init(u64 * bits, u64 nbit)
         }
         r9->bin[bb].seven = seven;
     }
-    r9->n_one = rank9_get(r9, r9->nbit);
+    // TODO: Stupid! should be able to ask about the last bit,
+    // i.e. with -1 I guess we need to decide wether the first
+    // bit of each block should be included in the index, or if it is the
+    // bits up to that block ...
+    // but of course we could add an extra block at the end just to
+    // store the total number of 1s ... but then that would ask for
+    // a larger B where it could calculate the trail...
+    // but adding a little more memory is probably preferential compared to
+    // having an extra conditional every time ... 
+    r9->n_one = rank9_get(r9, r9->nbit-2); 
     return r9;
 }
 
@@ -133,11 +142,11 @@ rank9b * rank9b_init(u64 * bits, u64 nbit)
         count += count_bits_u64(bits[bb*8]);
         u64 seven = 0;
         //printf("count=%lu\n", count);
-        for(int ll = 1; ll < 8; ll++){
+        for(u64 ll = 1; ll < 8; ll++){
             seven = seven << 9;
             seven = seven | (count - r9->bin[bb].rankp);
             //printf("%lu\n", seven % 256);
-            count += count_bits_u64(bits[bb*8+ll]);
+            count += count_bits_u64(bits[bb*8 + ll]);
         }
         r9->bin[bb].seven = seven;
         memcpy(r9->bin[bb].bits, bits+bb*8, 8*sizeof(u64));

@@ -31,11 +31,11 @@ void bitarray_set(bitarray * B, const u64 n, const u8 value);
 
 // number of 1s below n
 // O(n) time but with no memory overhead.
-i32 bitarray_rank1(const bitarray * B, const u64 n);
+u64 bitarray_rank1(const bitarray * B, const u64 n);
 
 // location of the nth 1
 // O(n) time but with no memory overhead.
-i32 bitarray_select1(const bitarray * B, const u64 n);
+u64 bitarray_select1(const bitarray * B, const u64 n);
 
 // set all bits to 0
 void bitarray_reset(bitarray * );
