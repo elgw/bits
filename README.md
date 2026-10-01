@@ -4,7 +4,7 @@
 for manipulating binary arrays
 - set and get is $`\mathcal{O}(1)`$
 - rank1, in $`\mathcal{O}(n)`$ time but no memory overhead
-- select1, in $`\mathcal(O)(n)`$ time but no memory overhead
+- select1, in $`\mathcal{O}(n)`$ time but no memory overhead
 
 ### **varray**
 variable bits per element array
@@ -12,10 +12,10 @@ variable bits per element array
 - get
 
 ### **rank9**
-- construction in $`\mathcal(O)(n)`$ time, using $`\mathcal(o)(n/4 + 128)`$
+- construction in $`\mathcal{O}(n)`$ time, using $`\mathcal(o)(n/4 + 128)`$
   bits extra memory.
-- rank1, in $`\mathcal(O)(n)`$.
-- select1_bs, in $`\mathcal(O)(\log n)`$ time.
+- rank1, in $`\mathcal{O}(n)`$.
+- select1_bs, in $`\mathcal{O}(\log n)`$ time.
   using binary search.
 
 ### **cindex**
