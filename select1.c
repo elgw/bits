@@ -3,9 +3,11 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <math.h>
+#include <x86intrin.h>
 
 #include "select1.h"
 
+#define SELECT1_L0 (2048) // Number of 1's per chunk. 2048 seems good
 
 select1 * select1_new(bitarray * B)
 {
@@ -20,18 +22,20 @@ select1 * select1_new(bitarray * B)
     u64 n_ones = bitarray_sum_ones(B);
     S->n_ones = n_ones;
     // printf("bvector length: %lu, number of 1s: %lu\n", B->n_bits, n_ones);
-    const u64 l0 = 512; // Number of 1's per chunk.
-    u64 n_level0 = n_ones / l0;
-    if(n_level0*l0 < n_ones){
+
+    u64 n_level0 = n_ones / SELECT1_L0;
+    if(n_level0*SELECT1_L0 < n_ones){
         n_level0++;
     }
-    assert(n_level0*l0 >= n_ones);
+    assert(n_level0*SELECT1_L0 >= n_ones);
     S->L8 = calloc(n_level0, sizeof(select1_64));
     S->mem_allocated += n_level0*sizeof(select1_64);
 
     double mem_quota =  (double) (S->mem_allocated*8) / (double) B->n_bits;
+    if(0){
     printf("Mem allocated: %lu bits (%.1f)\n", S->mem_allocated*8,
            mem_quota);
+    }
 
     u64 pos = 0; // In terms of B, B[pos]
     u64 * BA = B->data;
@@ -44,7 +48,7 @@ select1 * select1_new(bitarray * B)
         //printf("Chunk %lu starts at pos %lu\n", chunk, pos);
         //printf("Bits below: %lu\n", S->L8[chunk].n_below);
 
-        u64 most_ones = l0*(chunk+1);
+        u64 most_ones = SELECT1_L0*(chunk+1);
         most_ones >S->n_ones ? most_ones = S->n_ones : 0;
 
         while(found_1s + (u64) __builtin_popcountl(BA[pos]) < most_ones)
@@ -79,38 +83,45 @@ select1_raw(const u64 * BA,
         nfound += (u64) __builtin_popcountl(BA[i++]);
     }
 
+    u64 J = (u64) __builtin_ctzl(_pdep_u64(1LU << (n-nfound-1), BA[i]));
+    return i*64 + J;
+
+#if 0
     u64 j = 0;
     while(1)
     {
         nfound+= (BA[i] & (1LU << j)) > 0;
         if(nfound == n){
             //printf("(i=%lu, j=%lu)\n", i, j);
+            assert(j==J);
+            //printf("j=%lu, J=%lu\n", j, J);
             return i*64+j;
         }
         j++;
     }
     assert(0);
     return 0;
+#endif
 }
 
 u64 select1_get(const select1 * S, u64 i)
 {
-    u64 l0 = i/512;
+    u64 l0 = i/SELECT1_L0;
     select1_64 chunk = S->L8[l0];
     if(0){
         printf("[i=%lu l0=%lu chunk.left= %lu, chunk.n_below= %lu]\n",
                i, l0, chunk.left, chunk.n_below);
     }
     if(0){
-    u64 nfound = 0;
-    for(u64 kk = 0; kk < chunk.left; kk++)
-    {
-        nfound += (u64) __builtin_popcountl(S->B->data[kk]);
-    }
-    if(nfound != chunk.n_below){
-        printf("nfound=%lu nbelow=%lu\n", nfound, chunk.n_below);
-        assert(nfound == chunk.n_below);
-    }
+        u64 nfound = 0;
+        for(u64 kk = 0; kk < chunk.left; kk++)
+        {
+            nfound += (u64) __builtin_popcountl(S->B->data[kk]);
+        }
+        if(nfound != chunk.n_below){
+            printf("nfound=%lu nbelow=%lu\n", nfound, chunk.n_below);
+            assert(nfound == chunk.n_below);
+        }
     }
     return chunk.left*64LU + select1_raw(S->B->data + chunk.left,
                                          S->B->n_bits/64 + 1 - chunk.left,

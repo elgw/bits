@@ -77,8 +77,8 @@ static void benchmark_rank1_vs_lut(const u64 n){
 
 
 static void benchmark_select1_vs_lut(const u64 n){
-    printf("benchmark_select1_vs_lut\n");
-    printf("n = %.1f M (%lu)\n", (double) n/ 1000000.0, n);
+    //printf("benchmark_select1_vs_lut\n");
+    //printf("n = %.1f M (%lu)\n", (double) n/ 1000000.0, n);
     bitarray * B = bitarray_new(n);
     u32 * S1 = malloc(n*sizeof(u32));
     u64 nset = 0;
@@ -103,18 +103,37 @@ static void benchmark_select1_vs_lut(const u64 n){
     for(u64 ii = 0; ii < 1e6; ii++)
     {
         idx = 1 + (u64) rand() % (n_ones-1);
-        t0 = __rdtscp(&cpuid);
-        s1_array += S1[idx];
-        t1 = __rdtscp(&cpuid);
-        t_array += t1-t0;
-        //idx = rand() % (n-1);
-        t0 = __rdtscp(&cpuid);
-        s1_s1 += select1_get(s1, idx);
-        t1 = __rdtscp(&cpuid);
-        t_s1 += t1-t0;
+        if( rand() % 2 == 0){
+            t0 = __rdtscp(&cpuid);
+            s1_array += S1[idx];
+            t1 = __rdtscp(&cpuid);
+            t_array += t1-t0;
+            //idx = rand() % (n-1);
+            t0 = __rdtscp(&cpuid);
+            s1_s1 += select1_get(s1, idx);
+            t1 = __rdtscp(&cpuid);
+            t_s1 += t1-t0;
+        } else {
+            t0 = __rdtscp(&cpuid);
+            s1_s1 += select1_get(s1, idx);
+            t1 = __rdtscp(&cpuid);
+            t_s1 += t1-t0;
+
+            t0 = __rdtscp(&cpuid);
+            s1_array += S1[idx];
+            t1 = __rdtscp(&cpuid);
+            t_array += t1-t0;
+        }
     }
-    printf("t s1  = %lu (%lu)\n", t_s1,     s1_s1);
-    printf("t a   = %lu (%lu)\n", t_array,  s1_array);
+    if(0){
+        printf("t s1  = %lu (%lu)\n", t_s1,     s1_s1);
+        printf("t a   = %lu (%lu)\n", t_array,  s1_array);
+    }
+    if(s1_s1 != s1_array){
+        printf("%s:%d Error results differ\n", __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
+    }
+    printf("| %lu | %lu | %lu |\n", n, t_s1, t_array);
 
     select1_free(s1);
     bitarray_free(B);
@@ -127,9 +146,22 @@ void dummy(void){
     {
         bitarray_reset(B);
         bitarray_set(B, (u64) kk, 1); // fills from right to left...
+
         printf("bit %d: %lu (%d)\n", kk, B->data[0],
                __builtin_ctzl((u64) B->data[0]));
+
+
+
     }
+// Two instructions go get the position of the nth
+    // set bit.
+    for(u32 kk = 0; kk < 16; kk++)
+    {
+        u32 where = _pdep_u32(1LU << 0, kk); // requires -mtune=native
+        i32 pos = __builtin_ctz(where);
+        printf("%b, %b, %d\n", kk, where, pos);
+    }
+
 }
 
 
@@ -171,6 +203,7 @@ static void config_free(config * conf){
 
 int main(int argc, char ** argv)
 {
+    dummy();
     config * conf = config_new(argc, argv);
     if(conf->benchmark == 1){
         u64 n = 512*1;
