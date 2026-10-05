@@ -16,34 +16,26 @@ select1 * select1_new(bitarray * B)
         return NULL;
     }
     S->mem_allocated += sizeof(select1);
-    S->B = B; // borrowed, not owned by S
+    S->B = B; // borrowed, owned by B and not freed
 
     // Need to know the number of 1s for pre-allocation
-    u64 n_ones = bitarray_sum_ones(B);
-    S->n_ones = n_ones;
-    // printf("bvector length: %lu, number of 1s: %lu\n", B->n_bits, n_ones);
+    S->n_ones = bitarray_sum_ones(B);
 
-    u64 n_level0 = n_ones / SELECT1_L0;
-    if(n_level0*SELECT1_L0 < n_ones){
+    u64 n_level0 = S->n_ones / SELECT1_L0;
+    if(n_level0*SELECT1_L0 < S->n_ones){
         n_level0++;
     }
-    assert(n_level0*SELECT1_L0 >= n_ones);
+    assert(n_level0*SELECT1_L0 >= S->n_ones);
     S->L8 = calloc(n_level0, sizeof(select1_64));
     S->mem_allocated += n_level0*sizeof(select1_64);
 
-    double mem_quota =  (double) (S->mem_allocated*8) / (double) B->n_bits;
-    if(0){
-    printf("Mem allocated: %lu bits (%.1f)\n", S->mem_allocated*8,
-           mem_quota);
-    }
-
     u64 pos = 0; // In terms of B, B[pos]
-    u64 * BA = B->data;
+    const u64 * restrict BA = B->data;
     u64 found_1s = 0;
 
     for(u64 chunk = 0; chunk < n_level0; chunk++)
     {
-        S->L8[chunk].left = pos;
+        S->L8[chunk].i_word = pos;
         S->L8[chunk].n_below = found_1s;
         //printf("Chunk %lu starts at pos %lu\n", chunk, pos);
         //printf("Bits below: %lu\n", S->L8[chunk].n_below);
@@ -56,16 +48,7 @@ select1 * select1_new(bitarray * B)
             found_1s += (u64) __builtin_popcountl(BA[pos]);
             pos++;
         }
-
-        int is_sparse = (pos - S->L8[chunk].left) > pow(2, 16);
-        if(is_sparse) {
-            // TODO
-        }
-        if(! is_sparse) {
-            S->L8->sub16 = calloc(4, sizeof(select1_16));
-        }
     }
-    // TODO: Recursively update the lower levels
     return S;
 }
 
@@ -82,7 +65,7 @@ select1_raw(const u64 * BA,
     while(nfound + (u64) __builtin_popcountl(BA[i]) < n){
         nfound += (u64) __builtin_popcountl(BA[i++]);
     }
-
+    // https://ziggit.dev/t/find-the-nth-set-bit/14391
     u64 J = (u64) __builtin_ctzl(_pdep_u64(1LU << (n-nfound-1), BA[i]));
     return i*64 + J;
 
@@ -109,12 +92,12 @@ u64 select1_get(const select1 * S, u64 i)
     u64 l0 = i/SELECT1_L0;
     select1_64 chunk = S->L8[l0];
     if(0){
-        printf("[i=%lu l0=%lu chunk.left= %lu, chunk.n_below= %lu]\n",
-               i, l0, chunk.left, chunk.n_below);
+        printf("[i=%lu l0=%lu chunk.i_word= %lu, chunk.n_below= %lu]\n",
+               i, l0, chunk.i_word, chunk.n_below);
     }
     if(0){
         u64 nfound = 0;
-        for(u64 kk = 0; kk < chunk.left; kk++)
+        for(u64 kk = 0; kk < chunk.i_word; kk++)
         {
             nfound += (u64) __builtin_popcountl(S->B->data[kk]);
         }
@@ -123,8 +106,8 @@ u64 select1_get(const select1 * S, u64 i)
             assert(nfound == chunk.n_below);
         }
     }
-    return chunk.left*64LU + select1_raw(S->B->data + chunk.left,
-                                         S->B->n_bits/64 + 1 - chunk.left,
+    return chunk.i_word*64LU + select1_raw(S->B->data + chunk.i_word,
+                                         S->B->n_bits/64 + 1 - chunk.i_word,
                                          i - chunk.n_below);
 }
 
@@ -133,7 +116,7 @@ void select1_free(select1 * S)
     if(S == NULL){
         return;
     }
-
+    free(S->L8);
     free(S);
     return;
 }

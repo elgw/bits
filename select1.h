@@ -4,53 +4,28 @@
 
 #include "bitarray.h"
 
-// select1_X represents up to 2^X bits of the binary
-// array.
-
+// I choose not to split the universe perfectly
+// rather, rather restrict the break points to
+// align with u64.
+// Each bin is allowed to contain up to
+// SELECT1_L0 bits, but can contain as few as
+// SELECT1_L0 - 64.
 typedef struct {
-    u8 pos;
-    u64 * B;
-} select1_8;
-
-typedef struct {
-    u16 pos;
-    union {
-        u16 * tab16;
-        select1_8 * sub8;
-    };
-} select1_16;
-
-typedef struct {
-    u32 pos;
-    union {
-        select1_16 * sub16;
-        u32 * tab32;
-    };
-} select1_32;
-
-
-typedef struct { // Holds 2^9 or 512 1's can be up to 2^64 bits wide
-    // Indexes of B array
-    u64 left; //
-    u64 n_below; // At most ii*512 bit before this.
-    union {
-        select1_16 * sub16; // size <= 2^16
-        select1_32 * sub32; // size > 2^16 & size < 2^18
-        u64 * tab64; // size > 2^18 (2^) (2^9 * 2^8 = 2^17)
-    };
+    u64 i_word; // index into a word of  B
+    u64 n_below; // Number of 1's below B[i_word]
 } select1_64;
 
 typedef struct {
-    bitarray * B;
-    select1_64 * L8;
+    bitarray * B; // borrowed pointer from a bitarray
+    select1_64 * L8; // the index
     u64 n_ones;
     u64 mem_allocated;
 } select1;
 
-
 // An auxilary structure that can be used together with
 // an existing bitarray to calculate select1/rank1 in
 // almost linear time by storing an additional O(n) bits
+// well about n*sizeof(select1_64)/SELECT1_L0
 select1 * select1_new(bitarray * B);
 void select1_free(select1 *);
 u64 select1_get(const select1 *, size_t i);
