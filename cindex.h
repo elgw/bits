@@ -10,11 +10,11 @@
 // compressed by a unary array in a quite elegant way :)
 
 typedef struct{
-    u32 n;
+    u64 n;
     bitarray * upper;
     varray * lower;
-    u32 lower_bits;
-    u32 mem_allocated;
+    u64 lower_bits;
+    u64 mem_allocated;
 } cindex;
 
 cindex * cindex_new(const u32 * A, u32 n);

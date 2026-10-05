@@ -4,18 +4,46 @@
 
 #include "bitarray.h"
 
-// An "upgraded bitvector" with faster select1 operator.
-// following Mäkinen, p. 23.
-// however, skipping the last "four Russians technique" step
-// for the moment. Might revise some time to make sure that popcount
-// is used.
+// select1_X represents up to 2^X bits of the binary
+// array.
+
+typedef struct {
+    u8 pos;
+    u64 * B;
+} select1_8;
+
+typedef struct {
+    u16 pos;
+    union {
+        u16 * tab16;
+        select1_8 * sub8;
+    };
+} select1_16;
+
+typedef struct {
+    u32 pos;
+    union {
+        select1_16 * sub16;
+        u32 * tab32;
+    };
+} select1_32;
+
+
+typedef struct { // Holds 2^9 or 512 1's can be up to 2^64 bits wide
+    // Indexes of B array
+    u64 left; //
+    u64 n_below; // At most ii*512 bit before this.
+    union {
+        select1_16 * sub16; // size <= 2^16
+        select1_32 * sub32; // size > 2^16 & size < 2^18
+        u64 * tab64; // size > 2^18 (2^) (2^9 * 2^8 = 2^17)
+    };
+} select1_64;
+
 typedef struct {
     bitarray * B;
-    u32 n1; // number of 1s
-    u32 l;
-    u32 * first;
-    u32 k;
-    u8 * second;
+    select1_64 * L8;
+    u64 n_ones;
     u64 mem_allocated;
 } select1;
 
@@ -25,4 +53,4 @@ typedef struct {
 // almost linear time by storing an additional O(n) bits
 select1 * select1_new(bitarray * B);
 void select1_free(select1 *);
-i64 select1_get(const select1 *, size_t i);
+u64 select1_get(const select1 *, size_t i);

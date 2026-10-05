@@ -8,13 +8,16 @@
 
 typedef uint64_t u64;
 typedef uint32_t u32;
+typedef uint16_t u16;
+typedef uint8_t u8;
+
 typedef int32_t i32;
 typedef int64_t i64;
-typedef uint8_t u8;
+
 
 typedef struct {
     u64 * data;
-    u64 n;
+    u64 n_bits;
     u64 mem_allocated;
 } bitarray;
 
@@ -42,3 +45,5 @@ void bitarray_reset(bitarray * );
 
 // probably better to define as static where needed
 int pos_first_one(const u64 w);
+
+u64 bitarray_sum_ones(const bitarray *);

@@ -10,14 +10,14 @@ cindex * cindex_new(const u32 * A, u32 n)
     u32 maxval = A[n-1];
     C->n = n;
     // bits_upper
-    u32 bits_upper = ceil(log2(n));
+    u32 bits_upper = (u32) ceil(log2( (double) n)); // TODO: no need for floats
     // bits_lower
-    u32 bits_lower = ceil(log2(maxval) - log2(n));
+    u32 bits_lower = (u32) ceil(log2((double) maxval) - log2((double) n));
     C->lower_bits = bits_lower;
     printf("Upper bits: %u, lower bits %u\n", bits_upper, bits_lower);
     // storage for upper
 
-    u32 nbin = pow(2, bits_upper);
+    u32 nbin = (u32) pow(2, bits_upper);
     u32 nbits_upper = nbin+n; //2*n;
     C->upper = bitarray_new(nbits_upper);
     C->lower = varray_new(n, bits_lower);
@@ -53,7 +53,7 @@ cindex * cindex_new(const u32 * A, u32 n)
 u32 cindex_get(const cindex * C, u32 kk)
 {
     return (u32) varray_get(C->lower, kk)
-        + ((bitarray_rank1(C->upper, kk+1)-kk) << C->lower_bits);
+        + (u32) ((bitarray_rank1(C->upper, kk+1)-kk) << C->lower_bits);
 }
 
 void cindex_free(cindex * C){

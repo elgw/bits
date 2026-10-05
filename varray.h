@@ -2,10 +2,10 @@
 #include "bitarray.h"
 
 typedef struct {
-    u32 nbit;
-    u32 nel;
+    u64 nbit;
+    u64 nel;
     bitarray * B;
-    u32 mem_allocated;
+    u64 mem_allocated;
 } varray;
 
 // v-array consisting of v-bit entries
