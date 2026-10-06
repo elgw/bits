@@ -1,6 +1,7 @@
-This repo provides some functions for working on bit arrays and also a
-few succint data structures. Implemented for fun and learning. If you
-need these things, check out something more mature like
+Warning, throwaway code ahead! This repo provides some functions for
+working on bit arrays and also a few succint data
+structures. Implemented for fun and learning. If you need these
+things, check out something more mature like
 [sux-rs](https://github.com/vigna/sux-rs).
 
 
@@ -30,8 +31,6 @@ or
 make -B # -g3 and -Og
 valgrind ./bits
 ```
-
-
 
 
 ## Contents
