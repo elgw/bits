@@ -1,6 +1,38 @@
+This repo provides some functions for working on bit arrays and also a
+few succint data structures. Implemented for fun and learning. If you
+need these things, check out something more mature like
+[sux-rs](https://github.com/vigna/sux-rs).
+
+
 ## Building
 
 -  Build on GCC 13.3.0 and clang 18.1.3 under x86_64-pc-linux-gnu.
+
+- Not portable. And select1 use `_pdep_u64` which is in the VEX.W1
+  instruction set (part of AVX?).
+
+For running benchmarks, use
+
+``` shell
+make OPT=1
+```
+
+For detecting memory leaks, use
+
+```
+make SAN=1 -B # Enables -fsanitize=address
+./bits
+```
+
+or
+
+```
+make -B # -g3 and -Og
+valgrind ./bits
+```
+
+
+
 
 ## Contents
 
@@ -24,9 +56,44 @@ using binary search.
 
 - Inspired by Sebastiano Signa's rank9 [^1]
 
+<details><summary>Timings</summary>
+
+Reporting average rdts time for an array
+with approximately 50% density. Random access pattern.
+
+
+|             N | T_rank1 | T_rank1b | T_array |
+|--------------:|--------:|---------:|--------:|
+|           512 |      74 |       74 |      70 |
+|         1,024 |      74 |       74 |      70 |
+|         2,048 |      62 |       62 |      59 |
+|         4,096 |      62 |       62 |      59 |
+|         8,192 |      75 |       75 |      71 |
+|        16,384 |      64 |       64 |      60 |
+|        32,768 |      61 |       61 |      58 |
+|        65,536 |      74 |       74 |      70 |
+|       131,072 |      68 |       68 |      68 |
+|       262,144 |      75 |       75 |      79 |
+|       524,288 |      76 |       75 |      83 |
+|     1,048,576 |      80 |       79 |      87 |
+|     2,097,152 |      79 |       78 |     105 |
+|     4,194,304 |      93 |       92 |     266 |
+|     8,388,608 |      81 |       81 |     324 |
+|    16,777,216 |     104 |      121 |     389 |
+|    33,554,432 |     180 |      221 |     410 |
+|    67,108,864 |     284 |      315 |     403 |
+|   134,217,728 |     385 |      389 |     433 |
+|   268,435,456 |     430 |      409 |     477 |
+|   536,870,912 |     468 |      434 |     575 |
+| 1,073,741,824 |     466 |      421 |     635 |
+| 2,147,483,648 |     507 |      467 |     712 |
+
+</details>
+
 ### **select1**
 - construction in $`\mathcal{O}(n)`$ time, using $`\mathcal{O}(n/16)`$
-bits extra memory.
+bits extra memory. Using a single level of indirection. Will typically
+trigger two cache misses.
 
 <details><summary>Timings</summary>
 
@@ -36,7 +103,7 @@ $ ./bits --benchmark 2
 ```
 
 Reporting average rdts time for selecting a random 1 in an array
-with approximately 50% density.
+with approximately 50% density. Random access pattern.
 
 |             N | T_select1 | T_array |
 |--------------:|----------:|--------:|
@@ -55,9 +122,9 @@ with approximately 50% density.
 |     2,097,152 |       260 |     159 |
 |     4,194,304 |       266 |     130 |
 |     8,388,608 |       281 |     240 |
-|    16,777,216 |       295 |     329 |
-|    33,554,432 |       314 |     387 |
-|    67,108,864 |       363 |     413 |
+|    16,777,216 |   **295** |     329 |
+|    33,554,432 |   **314** |     387 |
+|    67,108,864 |   **363** |     413 |
 |   134,217,728 |       502 |     433 |
 |   268,435,456 |       668 |     481 |
 |   536,870,912 |       846 |     589 |
@@ -68,11 +135,15 @@ with approximately 50% density.
 
 </details>
 
-### **cindex**
+### **cindex** (TODO)
 Elias-Fano representation of non-decreasing sequences.
 - Construction.
 
 ## Notes/links
+
+- Timings typically depends on the density of 1's as well as the
+  access pattern. Small test sizes gives the overhead of the bit
+  manipulations while the large sizes reveals cache misses.
 
 - [Time Stamp
 Counter](https://en.wikipedia.org/wiki/Time_Stamp_Counter) used for

@@ -137,7 +137,7 @@ rank1b * rank1b_init(u64 * bits, u64 nbit)
     r1->bin = malloc(nbin*sizeof(rank1b_bin));
 
     u64 count = 0; // value of first bit
-    for(u64 bb = 0; bb+1 < nbin; bb++)
+    for(u64 bb = 0; bb < nbin; bb++)
     {
         //        printf("bb = %lu\n", bb);
         r1->bin[bb].rankp = count;
@@ -147,7 +147,7 @@ rank1b * rank1b_init(u64 * bits, u64 nbit)
         for(u64 ll = 1; ll < 8; ll++){
             seven = seven << 9;
             seven = seven | (count - r1->bin[bb].rankp);
-            //printf("%lu\n", seven % 256);
+            //printf("seven %% 256: %lu\n", seven % 256);
             count += count_bits_u64(bits[bb*8 + ll]);
         }
         r1->bin[bb].seven = seven;
@@ -170,6 +170,11 @@ u64 rank1b_get(const rank1b * r1, u64 b)
     l1 *= (l1 > 0);
 
     u64 l2 = count_n_bits_u64(r1->bin[bin].bits[ll], b % 64);
+    if(0){
+    printf("b = %lu, bin = %lu, l0 = %lu, l1 = %lu l2 = %lu\n",
+           b, bin, l0, l1, l2);
+    }
+    //exit(EXIT_FAILURE);
     return l0+l1+l2;
 }
 
