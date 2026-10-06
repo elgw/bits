@@ -66,7 +66,7 @@ with approximately 50% density.
 | 4,294,967,296 |     1,184 |     970 |
 | 8,589,934,592 |     1,169 |     746 |
 
-</summary>
+</details>
 
 ### **cindex**
 Elias-Fano representation of non-decreasing sequences.
