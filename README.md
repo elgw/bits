@@ -138,8 +138,45 @@ with approximately 50% density. Random access pattern.
 </details>
 
 ### **cindex** (TODO)
-Elias-Fano representation of non-decreasing sequences.
-- Construction.
+Elias-Fano representation [^2, ^3] of non-decreasing sequences.
+- Using bitarray, varray and select1 from above.
+- BUG: Can not select the last element...
+
+<details><summary>Timings</summary>
+
+``` shell
+$ make -B OPT=1
+$ ./bits --benchmark 3
+```
+
+|             N | T_cindex | T_array |
+|--------------:|---------:|--------:|
+|           512 |      305 |      70 |
+|         1,024 |      313 |      70 |
+|         2,048 |      346 |      71 |
+|         4,096 |      348 |      71 |
+|         8,192 |      348 |      71 |
+|        16,384 |      346 |      71 |
+|        32,768 |      345 |      71 |
+|        65,536 |      346 |      76 |
+|       131,072 |      348 |      81 |
+|       262,144 |      352 |      82 |
+|       524,288 |      344 |      83 |
+|     1,048,576 |      324 |     112 |
+|     2,097,152 |      313 |     246 |
+|     4,194,304 |      332 |     332 |
+|     8,388,608 |      371 |     388 |
+|    16,777,216 |      461 |     411 |
+|    33,554,432 |      600 |     433 |
+|    67,108,864 |      716 |     482 |
+|   134,217,728 |      895 |     612 |
+|   268,435,456 |    1,033 |     700 |
+|   536,870,912 |    1,035 |     708 |
+| 1,073,741,824 |    1,232 |     776 |
+| 2,147,483,648 |    1,226 |     766 |
+
+
+</details>
 
 ## Notes/links
 
@@ -159,10 +196,15 @@ the timings via the `__rdtscp` intrinsics.
 
 - `x86intrin.h`
 
+[^3]: [The Elias–Fano coding method by Giulio Ermanno
+Pibiri](https://jermp.github.io/assets/pdf/notes/elias_fano_notes.pdf)
+
+[^2]: [Sorted integers compression with Elias-Fano encoding by Antonio Mallia](https://www.antoniomallia.it/sorted-integers-compression-with-elias-fano-encoding.html)
+
 [^1]: Vigna, S. (2008). Broadword Implementation of Rank/Select
 Queries. In: McGeoch, C.C. (eds) Experimental
 Algorithms. WEA 2008. Lecture Notes in Computer Science,
-vol 5038. Springer, Berlin,
+vol 5038. Springer, Berlin,\
 Heidelberg. [https://doi.org/10.1007/978-3-540-68552-4_12] Also
 available from
 [https://vigna.di.unimi.it/ftp/papers/Broadword.pdf] Code (rust)

@@ -9,7 +9,7 @@ typedef struct {
 } varray;
 
 // v-array consisting of v-bit entries
-varray * varray_new(size_t n, u32 nbit);
+varray * varray_new(size_t n, u64 nbit);
 void varray_free(varray * V);
-u32 varray_get(const varray * V, size_t n);
-void varray_set(varray * V, size_t n, u32 value);
+u64 varray_get(const varray * V, size_t n);
+void varray_set(varray * V, size_t n, u64 value);

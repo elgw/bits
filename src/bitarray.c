@@ -142,3 +142,16 @@ u64 bitarray_sum_ones(const bitarray * B){
     }
     return n_ones;
 }
+
+void bitarray_print(const bitarray * B){
+    u64 nshow = 20;
+    B->n_bits < nshow ? nshow = B->n_bits : 0;
+    for(u64 kk = 0; kk < nshow; kk++)
+    {
+        printf("%d ", (int) bitarray_get(B, kk));
+    }
+    if(nshow < B->n_bits){
+        printf("... (and %lu more)", B->n_bits - nshow);
+    }
+    printf("\n");
+}

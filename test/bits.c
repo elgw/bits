@@ -19,6 +19,69 @@
 #include "select1.h"
 #include "select1_ut.h"
 
+static void benchmark_cindex_vs_lut(const u64 n){
+    u64 * L = malloc(n*sizeof(u64));
+    L[0] = 0;
+    for(u64 kk = 1; kk < n; kk++){
+        L[kk] = L[kk-1] + rand() % 13;
+    }
+
+    cindex * C = cindex_new(L, n);
+
+    // time for benchmark
+    u64 res_array = 0;
+    u64 res_cindex = 0;
+    u64 t_array = 0;
+    u64 t_cindex = 0;
+    u64 t0, t1;
+    u64 idx;
+    u32 cpuid;
+    u64 n_sample = 1e6;
+    for(u64 ii = 0; ii < n_sample; ii++)
+    {
+        idx = (u64) rand() % (n-1);
+        //if( rand() % 2 == 0){
+        t0 = __rdtscp(&cpuid);
+        res_array = L[idx];
+        t1 = __rdtscp(&cpuid);
+        t_array += t1-t0;
+        //idx = rand() % (n-1);
+        t0 = __rdtscp(&cpuid);
+        res_cindex = cindex_get(C, idx);
+        t1 = __rdtscp(&cpuid);
+        t_cindex += t1-t0;
+
+        if(res_cindex != res_array){
+            printf("%s:%d Error results differ\n", __FILE__, __LINE__);
+            printf("L[%lu] = %lu, cindex->%lu\n", idx, L[idx], cindex_get(C, idx));
+            exit(EXIT_FAILURE);
+        }
+    }
+
+
+
+    printf("| %'lu | %'.0f | %'.0f |\n",
+           n,
+           (double) t_cindex/ (double) n_sample,
+           (double) t_array/(double) n_sample);
+
+    cindex_free(C);
+    free(L);
+}
+
+
+static void run_benchmark_cindex_vs_lut(void){
+
+    printf("Reporting average rdts time\n");
+    u64 n = 512*1;
+    printf("| N   | T_cindex  | T_array |\n");
+    printf("| --: |       --: |     --: |\n");
+    while(n < 3e9){
+        benchmark_cindex_vs_lut(n);
+        n*=2;
+    }
+}
+
 
 static void benchmark_rank1_vs_lut(const u64 n){
     //printf("n = %.1f M (%lu)\n", (double) n/ 1000000.0, n);
@@ -249,6 +312,7 @@ config_new(int argc, char ** argv)
         { NULL,           0,               NULL,  0  }
     };
     config * conf = calloc(1, sizeof(config));
+    conf->verbose = 1;
     int ch;
     while((ch = getopt_long(argc, argv,
                             "1:2:dh",
@@ -284,6 +348,9 @@ int main(int argc, char ** argv)
     }
     if(conf->benchmark == 2){
         run_benchmark_select1_vs_lut();
+    }
+    if(conf->benchmark == 3){
+        run_benchmark_cindex_vs_lut();
     }
 
 

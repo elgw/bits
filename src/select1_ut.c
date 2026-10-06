@@ -61,6 +61,7 @@ static void test_select1(int verbose, u64 n){
 
     select1_free(S1);
     bitarray_free(B);
+    free(REF);
     free(A);
 }
 

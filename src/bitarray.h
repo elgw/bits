@@ -32,7 +32,7 @@ u8 bitarray_get(const bitarray * B, const u64 n);
 // set a specific bit
 void bitarray_set(bitarray * B, const u64 n, const u8 value);
 
-// number of 1s below n
+// number of 1s up to n
 // O(n) time but with no memory overhead.
 u64 bitarray_rank1(const bitarray * B, const u64 n);
 
@@ -47,3 +47,5 @@ void bitarray_reset(bitarray * );
 int pos_first_one(const u64 w);
 
 u64 bitarray_sum_ones(const bitarray *);
+
+void bitarray_print(const bitarray * B);
