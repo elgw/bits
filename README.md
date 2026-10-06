@@ -1,6 +1,7 @@
 Warning, throwaway code ahead! This repo provides some functions for
 working on bit arrays and also a few succint data
-structures. Implemented for fun and learning. If you need these
+structures. Implemented for fun and learning. Not elegant, not fastest
+in the world, probably at least one bug per line. If you need these
 things, check out something more mature like
 [sux-rs](https://github.com/vigna/sux-rs).
 
