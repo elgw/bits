@@ -100,7 +100,8 @@ static void benchmark_select1_vs_lut(const u64 n){
     u64 t0, t1;
     u64 idx;
     u32 cpuid;
-    for(u64 ii = 0; ii < 1e6; ii++)
+    u64 n_sample = 1e6;
+    for(u64 ii = 0; ii < n_sample; ii++)
     {
         idx = 1 + (u64) rand() % (n_ones-1);
         if( rand() % 2 == 0){
@@ -133,11 +134,25 @@ static void benchmark_select1_vs_lut(const u64 n){
         printf("%s:%d Error results differ\n", __FILE__, __LINE__);
         exit(EXIT_FAILURE);
     }
-    printf("| %lu | %lu | %lu |\n", n, t_s1, t_array);
+    printf("| %lu | %.0f | %.0f |\n",
+           n,
+           (double) t_s1/ (double) n_sample,
+           (double) t_array/(double) n_sample);
 
     select1_free(s1);
     bitarray_free(B);
     free(S1);
+}
+
+static void run_benchmark_select1_vs_lut(void){
+    printf("Reporting average rdts time\n");
+    u64 n = 512*1;
+    printf("| N   | T_select1 | T_array |\n");
+    printf("| --: |       --: |     --: |\n");
+    while(n < 3e10){
+        benchmark_select1_vs_lut(n);
+        n*=2;
+    }
 }
 
 void dummy(void){
@@ -213,11 +228,7 @@ int main(int argc, char ** argv)
         }
     }
     if(conf->benchmark == 2){
-        u64 n = 512*1;
-        while(n < 3e9){
-            benchmark_select1_vs_lut(n);
-            n*=2;
-        }
+        run_benchmark_select1_vs_lut();
     }
 
 
