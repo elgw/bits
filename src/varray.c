@@ -1,9 +1,10 @@
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 #include "varray.h"
 
-varray * varray_new(size_t n, u64 nbit)
+varray * varray_new(u64 n, u64 nbit)
 {
     varray * V = malloc(sizeof(varray));
     if(V == NULL){
@@ -17,6 +18,8 @@ varray * varray_new(size_t n, u64 nbit)
         return NULL;
     }
     V->mem_allocated = sizeof(varray) + V->B->mem_allocated;
+    V->bitmask = 0xffffffffffffffff >> (64-nbit);
+    //printf("bitmask: %lu\n", V->bitmask);
     return V;
 }
 
@@ -29,7 +32,24 @@ void varray_free(varray * V){
     return;
 }
 
-u64 varray_get(const varray * V, size_t n){
+u64 varray_get(const varray * V, u64 n){
+
+
+    u64 pos = n*V->nbit/64;
+    u64 rem = n*V->nbit - pos*64;
+    if(rem + V->nbit < 64){ // The number if within a single word
+        return (V->B->data[pos] >> rem) & V->bitmask;
+    } else { // stored over two words
+        u64 low = (V->B->data[pos] >> rem) & V->bitmask;
+        u64 high =  V->B->data[pos+1] << (64-rem); //rem);
+        u64 ret = (low + high) & V->bitmask;
+        return ret;
+    }
+    assert(0);
+    return 0;
+}
+
+#if 0 // this should do the same thing
     u64 r = 0;
     u64 m = 1;
     for(u64 kk = 0; kk < V->nbit; kk++){
@@ -37,9 +57,10 @@ u64 varray_get(const varray * V, size_t n){
         m*=2;
     }
     return r;
-}
+#endif
 
-void varray_set(varray * V, size_t n, u64 value)
+
+void varray_set(varray * V, u64 n, u64 value)
 {
     u64 r = value;
     for(u64 kk = 0; kk < V->nbit; kk++){

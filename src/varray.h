@@ -6,9 +6,11 @@ typedef struct {
     u64 nel;
     bitarray * B;
     u64 mem_allocated;
+    u64 bitmask;
 } varray;
 
 // v-array consisting of v-bit entries
+// nbit should be < 64
 varray * varray_new(size_t n, u64 nbit);
 void varray_free(varray * V);
 u64 varray_get(const varray * V, size_t n);

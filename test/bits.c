@@ -19,11 +19,90 @@
 #include "select1.h"
 #include "select1_ut.h"
 
+
+static void benchmark_varray_vs_array(const u64 n, const u64 bits){
+    u64 * A = malloc(n*sizeof(u64));
+    varray * V = varray_new(n, bits);
+    // Set A and V to contain the same things
+    const u64 lim = (u64) powl(2, bits);
+    for(u64 kk = 0; kk < n; kk++){
+        u64 val = (u64) ((u32) rand() % lim);
+        A[kk] = val;
+        varray_set(V, kk, A[kk]);
+    }
+
+    // time for benchmark
+    u64 res_array = 0;
+    u64 res_varray = 0;
+    u64 t_array = 0;
+    u64 t_varray = 0;
+    u64 t0, t1;
+    u64 idx;
+    u32 cpuid;
+    u64 n_sample = 1e6;
+    for(u64 ii = 0; ii < n_sample; ii++)
+    {
+        idx = (u64) rand() % n;
+        if( rand() % 2 == 0){
+            t0 = __rdtscp(&cpuid);
+            res_array = A[idx];
+            t1 = __rdtscp(&cpuid);
+            t_array += t1-t0;
+            //idx = rand() % (n-1);
+            t0 = __rdtscp(&cpuid);
+            res_varray = varray_get(V, idx);
+            t1 = __rdtscp(&cpuid);
+            t_varray += t1-t0;
+        } else {
+            t0 = __rdtscp(&cpuid);
+            res_varray = varray_get(V, idx);
+            t1 = __rdtscp(&cpuid);
+            t_varray += t1-t0;
+
+            t0 = __rdtscp(&cpuid);
+            res_array = A[idx];
+            t1 = __rdtscp(&cpuid);
+            t_array += t1-t0;
+        }
+
+        if(res_varray != res_array){
+            printf("%s:%d Error results differ\n", __FILE__, __LINE__);
+            printf("varray->%lu vs array->%lu\n", res_varray, res_array);
+            printf("%lx vs %lx\n", res_varray, res_array);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    printf("| %'lu | %'.0f | %'.0f |\n",
+           n,
+           (double) t_varray / (double) n_sample,
+           (double) t_array  / (double) n_sample);
+
+    varray_free(V);
+    free(A);
+    return;
+}
+
+
+static void run_benchmark_varray_vs_array(void){
+
+    printf("Reporting average rdts time\n");
+    u64 n = 512*1;
+    u64 bits = 33;
+    printf("| N   | T_varray_u%lu  | T_array_u64 |\n", bits);
+    printf("| --: |       --: |     --: |\n");
+    while(n < 3e9){
+        benchmark_varray_vs_array(n, bits);
+        n*=2;
+    }
+}
+
+
 static void benchmark_cindex_vs_lut(const u64 n){
     u64 * L = malloc(n*sizeof(u64));
     L[0] = 0;
     for(u64 kk = 1; kk < n; kk++){
-        L[kk] = L[kk-1] + rand() % 13;
+        L[kk] = L[kk-1] + (u64) rand() % 13;
     }
 
     cindex * C = cindex_new(L, n);
@@ -59,11 +138,12 @@ static void benchmark_cindex_vs_lut(const u64 n){
     }
 
 
-
-    printf("| %'lu | %'.0f | %'.0f |\n",
+    double mem_quota = (double) C->mem_allocated / (double) (n*sizeof(u64));
+    printf("| %'lu | %'.0f | %'.0f | %.2f |\n",
            n,
            (double) t_cindex/ (double) n_sample,
-           (double) t_array/(double) n_sample);
+           (double) t_array/(double) n_sample,
+           mem_quota);
 
     cindex_free(C);
     free(L);
@@ -74,13 +154,14 @@ static void run_benchmark_cindex_vs_lut(void){
 
     printf("Reporting average rdts time\n");
     u64 n = 512*1;
-    printf("| N   | T_cindex  | T_array |\n");
-    printf("| --: |       --: |     --: |\n");
+    printf("| N   | T_cindex  | T_array | cindex_mem_Q | \n");
+    printf("| --: |       --: |     --: |          --: |\n");
     while(n < 3e9){
         benchmark_cindex_vs_lut(n);
         n*=2;
     }
 }
+
 
 
 static void benchmark_rank1_vs_lut(const u64 n){
@@ -343,16 +424,25 @@ int main(int argc, char ** argv)
 {
     setlocale(LC_NUMERIC, "");
     config * conf = config_new(argc, argv);
-    if(conf->benchmark == 1){
+    switch(conf->benchmark){
+    case 0:
+        break;
+    case 1:
         run_benchmark_rank1_vs_lut();
-    }
-    if(conf->benchmark == 2){
+        break;
+    case 2:
         run_benchmark_select1_vs_lut();
-    }
-    if(conf->benchmark == 3){
+        break;
+    case 3:
         run_benchmark_cindex_vs_lut();
+        break;
+    case 4:
+        run_benchmark_varray_vs_array();
+        break;
+    default:
+        printf("No benchmark with id %d\n", conf->benchmark);
+        break;
     }
-
 
     srand((u32) time(NULL));
 

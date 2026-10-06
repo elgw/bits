@@ -7,6 +7,8 @@
 cindex * cindex_new(const u64 * A, u64 n)
 {
     cindex * C = calloc(1, sizeof(cindex));
+    C->mem_allocated += sizeof(cindex);
+
     u64 maxval = A[n-1];
     C->n = n;
     // bits_upper
@@ -27,7 +29,9 @@ cindex * cindex_new(const u64 * A, u64 n)
     u64 nbin = (u64) pow(2, bits_upper);
     u64 nbits_upper = nbin+n; //2*n;
     C->upper = bitarray_new(nbits_upper + 512 - (512 % nbits_upper));
+    C->mem_allocated += C->upper->mem_allocated;
     C->lower = varray_new(n, bits_lower);
+    C->mem_allocated += C->lower->mem_allocated;
 
     // Histogram over upper bits
 
@@ -51,13 +55,14 @@ cindex * cindex_new(const u64 * A, u64 n)
     bitarray_print(C->upper);
     }
     C->S1 = select1_new(C->upper);
+    C->mem_allocated += C->S1->mem_allocated;
     free(H);
     // Create lower array
     for(u64 kk = 0; kk < n; kk++){
         varray_set(C->lower, kk, A[kk]);
         //printf("stored as %u\n", varray_get(C->lower, kk));
     }
-    C->mem_allocated = C->upper->mem_allocated + C->lower->mem_allocated;
+
     return C;
 }
 

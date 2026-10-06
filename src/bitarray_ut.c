@@ -13,26 +13,29 @@ static void test_get_and_set(int verbose)
     if(verbose > 0){
         printf("%s : get and set\n", __FILE__);
     }
-    u64 n = (u64) rand() % 2000LU;
-    uint32_t * R = malloc(n*sizeof(uint32_t));
-    for(u64 kk = 0; kk < n; kk++){
-        R[kk] = (u32) rand() % 2;
+
+    for(u64 ii = 0; ii < 100; ii++){
+        u64 n = 1 + (u64) rand() % 2000LU;
+        uint32_t * R = malloc(n*sizeof(uint32_t));
+        for(u64 kk = 0; kk < n; kk++){
+            R[kk] = (u32) rand() % 2;
+        }
+
+        bitarray * B = bitarray_new(n);
+
+        for(u64 kk = 0; kk < n; kk++){
+            bitarray_set(B, kk, (u8) R[kk]);
+            assert(bitarray_get(B, kk) == R[kk]);
+        }
+
+        for(u64 kk = 0; kk < n; kk++){
+            assert(bitarray_get(B, kk) == R[kk]);
+        }
+
+        bitarray_free(B);
+
+        free(R);
     }
-
-    bitarray * B = bitarray_new(n);
-
-    for(u64 kk = 0; kk < n; kk++){
-        bitarray_set(B, kk, (u8) R[kk]);
-        assert(bitarray_get(B, kk) == R[kk]);
-    }
-
-    for(u64 kk = 0; kk < n; kk++){
-        assert(bitarray_get(B, kk) == R[kk]);
-    }
-
-    bitarray_free(B);
-
-    free(R);
 }
 
 static void test_rank1(int verbose){
@@ -91,7 +94,7 @@ static void test_select1(int verbose){
     if(verbose > 0){
         printf("%s : select1\n", __FILE__);
     }
-    u64 n = 1000;
+    u64 n = 1009;
     u8 * A = calloc(n, sizeof(u8));
     u32 * S1 = calloc(n, sizeof(u32));
     bitarray * B = bitarray_new(n);
@@ -145,7 +148,7 @@ static void test_select1(int verbose){
 
 void bitarray_ut(int verbose){
     if(verbose > 0){
-        printf("bitarray_ut\n");
+        printf("%s\n", __FILE__);
     }
     test_get_and_set(verbose);
     test_rank1(verbose);

@@ -15,13 +15,13 @@ bitarray * bitarray_new(u64 n)
         return NULL;
     }
     B->n_bits = n;
-    u64 nel = 1 + n / 64;
+    u64 nel = (n+63) / 64;
     B->data = calloc(nel, sizeof(u64));
     if(B == NULL){
         free(B);
         return NULL;
     }
-    B->mem_allocated = nel*sizeof(u64);
+    B->mem_allocated = nel*sizeof(u64) + sizeof(bitarray);
     return B;
 }
 
