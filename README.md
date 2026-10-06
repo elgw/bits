@@ -154,9 +154,6 @@ the timings via the `__rdtscp` intrinsics.
 
 - `x86intrin.h`
 
-- Can `__builtin_stdc_rotate_left` be used to zero out? `<<` can't be
-used for a full shift. I think that could be used for select9.
-
 [^1]: Vigna, S. (2008). Broadword Implementation of Rank/Select
 Queries. In: McGeoch, C.C. (eds) Experimental
 Algorithms. WEA 2008. Lecture Notes in Computer Science,
