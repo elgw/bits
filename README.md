@@ -97,7 +97,7 @@ trigger two cache misses.
 - Can be used to encode **increasing** sequences $`[s_0 \geq 0,
   s_1>s_0, ..., s_k <n`$ in $`n+n/16`$ bits, or even
   **non-decreasing** sequences, $`[s_0 \geq 0, s_1 \geq s_0, ..., s_k
-  <n`$ via a 1-1 mapping $`x->x+1`$ in $`(k+n)\frac{17/16}`$ bits.
+  <n`$ via a 1-1 mapping $`x->x+1`$ in $`(k+n)\frac{17}{16}`$ bits.
 
 <details><summary>Timings</summary>
 
