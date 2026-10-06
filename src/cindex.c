@@ -26,7 +26,7 @@ cindex * cindex_new(const u64 * A, u64 n)
     }
     // storage for upper
 
-    u64 nbin = (u64) pow(2, bits_upper);
+    u64 nbin = (u64) powl(2, bits_upper);
     u64 nbits_upper = nbin+n; //2*n;
     C->upper = bitarray_new(nbits_upper + 512 - (512 % nbits_upper));
     C->mem_allocated += C->upper->mem_allocated;
@@ -70,6 +70,7 @@ u64 cindex_get(const cindex * C, u64 kk)
 {
     u64 lower = varray_get(C->lower, kk);
     u64 ra = select1_get(C->S1, kk+1);
+    //u64 ra = bitarray_select1(C->S1->B, kk+1);
     //u64 ra2 = bitarray_select1(C->upper, kk+1);
     //assert(ra == ra2);
     u64 upper = (u64) (ra-kk) << C->lower_bits;

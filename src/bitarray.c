@@ -14,8 +14,9 @@ bitarray * bitarray_new(u64 n)
     if(B == NULL){
         return NULL;
     }
-    B->n_bits = n;
+    //B->n_bits = n;
     u64 nel = (n+63) / 64;
+    B->n_bits = nel*64;
     B->data = calloc(nel, sizeof(u64));
     if(B == NULL){
         free(B);
@@ -140,6 +141,11 @@ u64 bitarray_sum_ones(const bitarray * B){
     for(u64 kk = 0; kk < B->n_bits/64; kk++){
         n_ones += (u64) __builtin_popcountl(B->data[kk]);
     }
+    #ifndef NDEBUG
+    if(B->n_bits % 64 != 0){
+        raise(SIGSEGV);
+    }
+    #endif
     return n_ones;
 }
 

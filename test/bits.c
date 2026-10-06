@@ -118,7 +118,7 @@ static void benchmark_cindex_vs_lut(const u64 n){
     u64 n_sample = 1e6;
     for(u64 ii = 0; ii < n_sample; ii++)
     {
-        idx = (u64) rand() % (n-1);
+        idx = (u64) rand() % n;
         //if( rand() % 2 == 0){
         t0 = __rdtscp(&cpuid);
         res_array = L[idx];
@@ -149,7 +149,7 @@ static void benchmark_cindex_vs_lut(const u64 n){
     free(L);
 }
 
-
+// benchmark 3
 static void run_benchmark_cindex_vs_lut(void){
 
     printf("Reporting average rdts time\n");
@@ -441,7 +441,8 @@ int main(int argc, char ** argv)
         break;
     default:
         printf("No benchmark with id %d\n", conf->benchmark);
-        break;
+        config_free(conf);
+        return EXIT_FAILURE;
     }
 
     srand((u32) time(NULL));

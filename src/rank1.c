@@ -81,7 +81,10 @@ u64 rank1_get(const rank1 * r1, u64 b)
         l1 = l1 % 512;
     }
     u64 b2 = b % 64;
-    u64 l2 = count_n_bits_u64(r1->bits[b/64], b2);
+    u64 l2 = 0;
+    if(b < r1->nbit){
+        l2 = count_n_bits_u64(r1->bits[b/64], b2);
+    }
     return l0+l1+l2;
 }
 

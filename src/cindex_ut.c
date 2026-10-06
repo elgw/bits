@@ -63,6 +63,7 @@ void cindex_ut(int verbose){
         printf("%s\n", __FILE__);
     }
     cindex_ut_size(verbose, 7);
+    cindex_ut_size(verbose, 2048);
     cindex_ut_size(verbose, 7000);
     cindex_ut_size(verbose, 70000);
     cindex_ut_size(verbose, 700000);

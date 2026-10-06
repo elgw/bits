@@ -37,9 +37,11 @@ u64 varray_get(const varray * V, u64 n){
 
     u64 pos = n*V->nbit/64;
     u64 rem = n*V->nbit - pos*64;
-    if(rem + V->nbit < 64){ // The number if within a single word
+    if(rem + V->nbit <= 64){ // The number if within a single word
         return (V->B->data[pos] >> rem) & V->bitmask;
     } else { // stored over two words
+        //printf("n=%lu, pos=%lu, bits=%lu, rem=%lu\n",
+        // n, pos, V->nbit, rem);
         u64 low = (V->B->data[pos] >> rem) & V->bitmask;
         u64 high =  V->B->data[pos+1] << (64-rem); //rem);
         u64 ret = (low + high) & V->bitmask;

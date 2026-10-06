@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <math.h>
+#include <signal.h>
 #include <x86intrin.h>
 
 #include "select1.h"
@@ -11,6 +12,11 @@
 
 select1 * select1_new(bitarray * B)
 {
+#ifndef NDEBUG
+    if(B->n_bits % 64 != 0){
+        raise(SIGSEGV);
+    }
+#endif
     select1 * S = calloc(1, sizeof(select1));
     if(S == NULL){
         return NULL;
@@ -21,13 +27,13 @@ select1 * select1_new(bitarray * B)
     // Need to know the number of 1s for pre-allocation
     S->n_ones = bitarray_sum_ones(B);
 
-    u64 n_level0 = S->n_ones / SELECT1_L0;
+    u64 n_level0 = (S->n_ones + SELECT1_L0) / SELECT1_L0;
     if(n_level0*SELECT1_L0 < S->n_ones){
         n_level0++;
     }
     assert(n_level0*SELECT1_L0 >= S->n_ones);
-    S->L8 = calloc(n_level0, sizeof(select1_64));
-    S->mem_allocated += n_level0*sizeof(select1_64);
+    S->L8 = calloc(n_level0+1, sizeof(select1_64));
+    S->mem_allocated += (n_level0+1)*sizeof(select1_64);
 
     u64 pos = 0; // In terms of B, B[pos]
     const u64 * restrict BA = B->data;
@@ -49,12 +55,15 @@ select1 * select1_new(bitarray * B)
             pos++;
         }
     }
+
+    // Note: not all data is scanned so it is possible that found_1s < S->n_ones
+    // that is ok.
     return S;
 }
 
 static u64
 select1_raw(const u64 * BA,
-            const u64 n_BA, // number of u64s to scan
+            __attribute__((unused)) const u64 n_BA, // number of u64s to scan
             const u64 n) // number of the '1' to find
 {
     u64 nfound = 0;
@@ -89,6 +98,15 @@ select1_raw(const u64 * BA,
 
 u64 select1_get(const select1 * S, u64 i)
 {
+    #ifndef NDEBUG
+    if(i > S->n_ones){
+        printf("Asking for the %lu:th 1 but there are only %lu ones\n",
+               i, S->n_ones);
+        printf("%s:L%d\n", __FILE__, __LINE__);
+        raise(SIGSEGV);
+    }
+    #endif
+    assert(i <= S->n_ones);
     u64 l0 = i/SELECT1_L0;
     select1_64 chunk = S->L8[l0];
     if(0){

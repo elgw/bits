@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
+#include <signal.h>
 
 #include "varray.h"
 #include "varray_ut.h"
@@ -13,7 +14,7 @@ static void test_varray_size(int verbose, u64 n, int bits){
         printf("-- test_varray, n= %zu, bits = %d\n", n, bits);
     }
     uint32_t * R = malloc(n*sizeof(uint32_t));
-    u32 max = (u32) pow(2, bits);
+    u32 max = (u32) pow(2, bits) - 1;
     for(u64 kk = 0; kk < n; kk++){
         R[kk] = (u32) rand() % max;
     }
@@ -25,7 +26,17 @@ static void test_varray_size(int verbose, u64 n, int bits){
     }
 
     for(u64 kk = 0; kk < n; kk++){
-        assert(varray_get(V, kk) == R[kk]);
+        #ifndef NDEBUG
+        if(varray_get(V, kk) != R[kk]){
+            printf("Element %lu should be %u but got %lu\n",
+                   kk,
+                   R[kk],
+                   varray_get(V, kk));
+            raise(SIGSEGV);
+            assert(varray_get(V, kk) == R[kk]);
+        }
+        #endif
+
     }
 
     varray_free(V);

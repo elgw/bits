@@ -173,10 +173,9 @@ with approximately 50% density. Random access pattern.
 
 </details>
 
-### **cindex** (TODO)
+### **cindex**
 Elias-Fano representation [^2], [^3] of non-decreasing sequences.
 - Using bitarray, varray and select1 from above.
-- BUG: Can not select the last element...
 
 <details><summary>Timings</summary>
 

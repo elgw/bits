@@ -42,7 +42,7 @@ static void test_rank1(int verbose){
     if(verbose > 0){
         printf("%s : rank1\n", __FILE__);
     }
-    u64 n = 512*4;
+    u64 n = 1009;
     u8 * A = calloc(n, sizeof(u8));
     u32 * R1 = calloc(n, sizeof(u32));
     bitarray * B = bitarray_new(n);
