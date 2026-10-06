@@ -1,11 +1,12 @@
-#include <stdlib.h>
+#include <assert.h>
+#include <getopt.h>
+#include <locale.h>
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
-#include <math.h>
+#include <stdlib.h>
 #include <time.h>
 #include <x86intrin.h>
-#include <getopt.h>
 
 #include "bitarray.h"
 #include "bitarray_ut.h"
@@ -22,7 +23,7 @@
 static void benchmark_rank1_vs_lut(const u64 n){
     //printf("n = %.1f M (%lu)\n", (double) n/ 1000000.0, n);
     bitarray * B = bitarray_new(n);
-    u32 * R1 = malloc(n*sizeof(u32));
+    u64 * R1 = malloc(n*sizeof(u64));
     u64 nset = 0;
     for(u64 kk = 0; kk < n; kk++){
         if(rand() % 2){
@@ -72,7 +73,7 @@ static void benchmark_rank1_vs_lut(const u64 n){
         printf("t r1b = %lu (%lu)\n", t_r1b,    rk_r1b);
         printf("t a   = %lu (%lu)\n", t_array,  rk_a);
     }
-    printf("| %lu | %.0f | %.0f | %.0f |\n",
+    printf("| %'lu | %'.0f | %'.0f | %'.0f |\n",
            n,
            (double) t_r1/ (double) n_sample,
            (double) t_r1b/ (double) n_sample,
@@ -108,7 +109,7 @@ static void benchmark_select1_vs_lut(const u64 n){
     //printf("benchmark_select1_vs_lut\n");
     //printf("n = %.1f M (%lu)\n", (double) n/ 1000000.0, n);
     bitarray * B = bitarray_new(n);
-    u32 * S1 = malloc(n*sizeof(u32));
+    u64 * S1 = malloc(n*sizeof(u64));
     u64 nset = 0;
     for(u64 kk = 0; kk < n; kk++){
         if(rand() % 2){
@@ -162,7 +163,7 @@ static void benchmark_select1_vs_lut(const u64 n){
         printf("%s:%d Error results differ\n", __FILE__, __LINE__);
         exit(EXIT_FAILURE);
     }
-    printf("| %lu | %.0f | %.0f |\n",
+    printf("| %'lu | %'.0f | %'.0f |\n",
            n,
            (double) t_s1/ (double) n_sample,
            (double) t_array/(double) n_sample);
@@ -276,6 +277,7 @@ config_new(int argc, char ** argv)
 
 int main(int argc, char ** argv)
 {
+    setlocale(LC_NUMERIC, "");
     config * conf = config_new(argc, argv);
     if(conf->benchmark == 1){
         run_benchmark_rank1_vs_lut();
