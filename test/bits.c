@@ -18,6 +18,8 @@
 #include "rank1_ut.h"
 #include "select1.h"
 #include "select1_ut.h"
+#include "select1c.h"
+#include "select1c_ut.h"
 
 
 static void benchmark_varray_vs_array(const u64 n, const u64 bits){
@@ -256,60 +258,65 @@ static void benchmark_select1_vs_lut(const u64 n){
     u64 * S1 = malloc(n*sizeof(u64));
     u64 nset = 0;
     for(u64 kk = 0; kk < n; kk++){
-        if(rand() % 2){
+        if(1){//} (rand() % 5) == 0){
             bitarray_set(B, kk, 1);
-            nset++;
-            S1[nset] = (u32) kk;
+            S1[nset++] = (u32) kk;
         }
     }
 
     select1 * s1 = select1_new(B);
+    select1c * s1c = select1c_new(B);
     const u64 n_ones = s1->n_ones;
     // time for benchmark
-    u64 s1_array = 0;
-    u64 s1_s1 = 0;
+
+
     u64 t_array = 0;
     u64 t_s1 = 0;
+    u64 t_s1c = 0;
+
     u64 t0, t1;
     u64 idx;
     u32 cpuid;
     u64 n_sample = 1e6;
     for(u64 ii = 0; ii < n_sample; ii++)
     {
-        idx = 1 + (u64) rand() % (n_ones-1);
-        if( rand() % 2 == 0){
-            t0 = __rdtscp(&cpuid);
-            s1_array += S1[idx];
-            t1 = __rdtscp(&cpuid);
-            t_array += t1-t0;
-            //idx = rand() % (n-1);
-            t0 = __rdtscp(&cpuid);
-            s1_s1 += select1_get(s1, idx);
-            t1 = __rdtscp(&cpuid);
-            t_s1 += t1-t0;
-        } else {
-            t0 = __rdtscp(&cpuid);
-            s1_s1 += select1_get(s1, idx);
-            t1 = __rdtscp(&cpuid);
-            t_s1 += t1-t0;
+        u64 s1_array = 0;
+        u64 s1_s1 = 0;
+        u64 s1_s1c = 0;
 
-            t0 = __rdtscp(&cpuid);
-            s1_array += S1[idx];
-            t1 = __rdtscp(&cpuid);
-            t_array += t1-t0;
+        idx = 1 + (u64) rand() % (n_ones-1);
+
+        t0 = __rdtscp(&cpuid);
+        s1_array = S1[idx-1];
+        t1 = __rdtscp(&cpuid);
+        t_array += t1-t0;
+        //idx = rand() % (n-1);
+        t0 = __rdtscp(&cpuid);
+        s1_s1 = select1_get(s1, idx);
+        t1 = __rdtscp(&cpuid);
+        t_s1 += t1-t0;
+
+        t0 = __rdtscp(&cpuid);
+        s1_s1c = select1c_get(s1c, idx-1);
+        t1 = __rdtscp(&cpuid);
+        t_s1c += t1-t0;
+
+
+        if(0){
+            printf("t s1  = %lu (%lu)\n", t_s1,     s1_s1);
+            printf("t a   = %lu (%lu)\n", t_array,  s1_array);
+        }
+        if((s1_s1 != s1_array) | (s1_s1c != s1_array)){
+            printf("%s:%d Error results differ\n", __FILE__, __LINE__);
+            printf("idx=%lu, ref: %lu, s1: %lu, s1c: %lu\n",
+                   idx, s1_array, s1_s1, s1_s1c);
+            exit(EXIT_FAILURE);
         }
     }
-    if(0){
-        printf("t s1  = %lu (%lu)\n", t_s1,     s1_s1);
-        printf("t a   = %lu (%lu)\n", t_array,  s1_array);
-    }
-    if(s1_s1 != s1_array){
-        printf("%s:%d Error results differ\n", __FILE__, __LINE__);
-        exit(EXIT_FAILURE);
-    }
-    printf("| %'lu | %'.0f | %'.0f |\n",
+    printf("| %'lu | %'.0f | %'.0f | %'.0f |\n",
            n,
            (double) t_s1/ (double) n_sample,
+           (double) t_s1c/ (double) n_sample,
            (double) t_array/(double) n_sample);
 
     select1_free(s1);
@@ -320,8 +327,8 @@ static void benchmark_select1_vs_lut(const u64 n){
 static void run_benchmark_select1_vs_lut(void){
     printf("Reporting average rdts time\n");
     u64 n = 512*1;
-    printf("| N   | T_select1 | T_array |\n");
-    printf("| --: |       --: |     --: |\n");
+    printf("| N   | T_select1 | T_select1c | T_array |\n");
+    printf("| --: |       --: |        --: |     --: |\n");
     while(n < 3e10){
         benchmark_select1_vs_lut(n);
         n*=2;
@@ -369,11 +376,15 @@ config_free(config * conf){
 }
 
 static void usage(void){
-    printf("Usage:\n");
+    printf("Usage: bits [ARGS]\n\n");
+    printf("Possible arguments:\n");
     printf("--verbose v\n\tSet verbosity level to v\n");
     printf("--benchmark n\n\t"
            "n=1 benchmark rank1\n\t"
-           "n=2 benchmark select1\n");
+           "n=2 benchmark select1\n\t"
+           "n=3 benchmark cindex\n\t"
+           "n=4 benchmark varray\n");
+
     printf("--help\n\tShow this help message\n");
     printf("--dummy\n\tUsed for some quick dev tests\n");
     printf("\n");
@@ -446,12 +457,16 @@ int main(int argc, char ** argv)
     }
 
     srand((u32) time(NULL));
-
+#ifdef NDEBUG
+    printf("Compiled with -DNDEBUG, not all tests are enabled\n");
+#endif
     bitarray_ut(conf->verbose); // bitarray_ut.c
     varray_ut(conf->verbose);
     rank1_ut(conf->verbose);
     select1_ut(conf->verbose);
+    select1c_ut(conf->verbose);
     cindex_ut(conf->verbose);
     config_free(conf);
+    printf("All tests passed successfully. Tests not tested :)\n");
     return EXIT_SUCCESS;
 }

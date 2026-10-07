@@ -54,7 +54,7 @@ cindex * cindex_new(const u64 * A, u64 n)
     if(0){
     bitarray_print(C->upper);
     }
-    C->S1 = select1_new(C->upper);
+    C->S1 = select1c_new(C->upper);
     C->mem_allocated += C->S1->mem_allocated;
     free(H);
     // Create lower array
@@ -69,9 +69,9 @@ cindex * cindex_new(const u64 * A, u64 n)
 u64 cindex_get(const cindex * C, u64 kk)
 {
     u64 lower = varray_get(C->lower, kk);
-    u64 ra = select1_get(C->S1, kk+1);
-    //u64 ra = bitarray_select1(C->S1->B, kk+1);
-    //u64 ra2 = bitarray_select1(C->upper, kk+1);
+    u64 ra = select1c_get(C->S1, kk);
+    //u64 ra = bitarray_select1c(C->S1->B, kk+1);
+    //u64 ra2 = bitarray_select1c(C->upper, kk+1);
     //assert(ra == ra2);
     u64 upper = (u64) (ra-kk) << C->lower_bits;
 
@@ -87,7 +87,7 @@ void cindex_free(cindex * C){
         return;
     }
     bitarray_free(C->upper);
-    select1_free(C->S1);
+    select1c_free(C->S1);
     varray_free(C->lower);
     free(C);
     return;

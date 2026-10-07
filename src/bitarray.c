@@ -17,6 +17,8 @@ bitarray * bitarray_new(u64 n)
     //B->n_bits = n;
     u64 nel = (n+63) / 64;
     B->n_bits = nel*64;
+    assert(nel > 0);
+    assert(nel*64 >= n);
     B->data = calloc(nel, sizeof(u64));
     if(B == NULL){
         free(B);
@@ -36,8 +38,12 @@ void bitarray_free(bitarray * B)
 
 u8 bitarray_get(const bitarray * B, const u64 n)
 {
-    if(n >= B->n_bits) { raise(SIGSEGV); }
-    assert(n < B->n_bits);
+    #ifndef NDEBUG
+    if(n >= B->n_bits) {
+        printf("Asking for bit %lu, but there are only %lu available\n", n+1, B->n_bits);
+        raise(SIGSEGV);
+    }
+    #endif
     u64 aidx = n / 64;
     u64 sh = n - aidx*64;
     return (B->data[aidx] & (1LU << sh)) > 0;
@@ -69,7 +75,7 @@ u64 bitarray_rank1(const bitarray * B, const u64 n)
     u64 nbit = n - nw*64;
     // count ones in full words
     for(u64 w = 0; w < nw; w++) {
-      nfound += (u64) __builtin_popcountl(B->data[w]);
+        nfound += (u64) __builtin_popcountl(B->data[w]);
     }
     // count remaining bits
     for(u64 i = 0; i <= nbit; i++){

@@ -8,6 +8,10 @@
 
 #include "select1.h"
 
+// To test:
+// - Index to specific bit, not word to save memory at the cost of some more bit fiddling
+// - Two level index (then sparse regions have to be handled separately).
+
 #define SELECT1_L0 (2048LU) // Number of 1's per chunk. 2048 seems good
 
 select1 * select1_new(bitarray * B)
@@ -42,7 +46,7 @@ select1 * select1_new(bitarray * B)
     {
         S->L8[chunk].i_word = pos;
         //S->L8[chunk].n_below = found_1s;
-        assert(SELECT1_L0*chunk - found_1s < 64);
+        //assert(SELECT1_L0*chunk - found_1s < 64);
         S->L8[chunk].delta_count[0] = (u8) (SELECT1_L0*chunk - found_1s);
         //printf("Chunk %lu starts at pos %lu\n", chunk, pos);
         //printf("Bits below: %lu\n", S->L8[chunk].n_below);

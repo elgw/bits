@@ -25,7 +25,7 @@ cindex_ut_size(int verbose, u64 n)
         A[6] = 25;
     }
 
-    if(verbose > 0){
+    if(verbose > 1){
         printf("A=");
         for(u64 kk = 0; kk < 7; kk++){
             printf("%lu ", A[kk]);
@@ -33,7 +33,7 @@ cindex_ut_size(int verbose, u64 n)
         printf("\n");
     }
     cindex * C = cindex_new(A, n);
-    if(verbose > 0){
+    if(verbose > 1){
         printf("C=");
         for(u64 kk = 0; kk < 7; kk++){
             printf("%lu ", cindex_get(C, kk));

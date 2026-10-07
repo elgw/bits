@@ -22,12 +22,14 @@ OBJECTS=bitarray.o \
 varray.o \
 cindex.o \
 rank1.o \
-select1.o \
 bitarray_ut.o \
 varray_ut.o \
 cindex_ut.o \
 rank1_ut.o \
-select1_ut.o
+select1.o \
+select1_ut.o \
+select1c.o \
+select1c_ut.o
 
 SRCDIR=src/
 

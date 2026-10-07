@@ -3,12 +3,12 @@
 #include <stdlib.h>
 
 #include "bitarray.h"
-#include "select1.h"
-#include "select1_ut.h"
+#include "select1c.h"
+#include "select1c_ut.h"
 
-static void test_select1(int verbose, u64 n){
+static void test_select1c(int verbose, u64 n, double density){
     if(verbose > 1){
-        printf("-- test_select1 n=%zu\n", n);
+        printf("-- test_select1c n=%zu\n", n);
     }
     u8 * A = calloc(n, sizeof(u8));
     u32 * REF = calloc(n, sizeof(u32));
@@ -18,14 +18,14 @@ static void test_select1(int verbose, u64 n){
     nshow > 20 ? nshow = 20 : 0;
 
     for(u64 kk = 0; kk < n; kk++){
-        if(rand() % 2){
+        if((double) rand() / (double) RAND_MAX < density){
             A[kk] = 1;
             bitarray_set(B, kk, 1);
             REF[nset++] = (u32) kk;
         }
     }
 
-    select1 * S1 = select1_new(B);
+    select1c * S1 = select1c_new(B);
 
     u32 nshow_select = nset;
     nshow_select > 10 ? nshow_select = 9 : 0 ;
@@ -48,29 +48,35 @@ static void test_select1(int verbose, u64 n){
         }
         printf("\n");
 
-        printf("s1. S1 = ");
-        for(u32 kk = 1; kk <= nshow_select; kk++){
-            printf("%ld ", select1_get(S1, kk));
+        printf("s1c S1 = ");
+        for(u32 kk = 0; kk < nshow_select; kk++){
+            printf("%ld ", select1c_get(S1, kk));
         }
         printf("\n");
     }
-    for(u32 kk = 1; kk < nset; kk++){
-        //printf("%lu -- %u\n", select1_get(S1, kk), REF[kk-1]);
-        assert(select1_get(S1, kk) == (u64) REF[kk-1]);
+    for(u32 kk = 0; kk < nset; kk++){
+        if(select1c_get(S1, kk) != (u64) REF[kk]){
+            printf("kk: %u, select1c:%lu ref:%u (nset=%u)\n",
+                   kk, select1c_get(S1, kk), REF[kk], nset);
+        }
+        assert(select1c_get(S1, kk) == (u64) REF[kk]);
     }
 
-    select1_free(S1);
+    select1c_free(S1);
     bitarray_free(B);
     free(REF);
     free(A);
 }
 
 
-void select1_ut(int verbose){
+void select1c_ut(int verbose){
     if(verbose > 0){
         printf("%s\n", __FILE__);
     }
-    test_select1(verbose, 7001);
-    test_select1(verbose, 17000);
-    test_select1(verbose, 77000);
+    for(double density = 0.001; density < 1.0; density += 0.01)
+    {
+        test_select1c(verbose, 7001, density);
+        test_select1c(verbose, 17000, density);
+        test_select1c(verbose, 77000, density);
+    }
 }

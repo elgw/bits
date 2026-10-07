@@ -2,7 +2,7 @@
 
 #include "bitarray.h"
 #include "varray.h"
-#include "select1.h"
+#include "select1c.h"
 // Elias-Fano encoding of the non-decreasing values in A
 // i.e. a compression routine with O(1) access time
 // Works by splitting each number into a lower and upper part
@@ -12,7 +12,7 @@
 typedef struct{
     u64 n;
     bitarray * upper;
-    select1 * S1;
+    select1c * S1;
     varray * lower;
     u64 lower_bits;
     u64 mem_allocated;
