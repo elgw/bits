@@ -8,7 +8,7 @@
 
 #include "select1.h"
 
-#define SELECT1_L0 (2048) // Number of 1's per chunk. 2048 seems good
+#define SELECT1_L0 (2048LU) // Number of 1's per chunk. 2048 seems good
 
 select1 * select1_new(bitarray * B)
 {
@@ -22,8 +22,7 @@ select1 * select1_new(bitarray * B)
         return NULL;
     }
     S->mem_allocated += sizeof(select1);
-    S->B = B; // borrowed, owned by B and not freed
-
+    S->bits = B->data; // borrowed, owned by B and not freed
     // Need to know the number of 1s for pre-allocation
     S->n_ones = bitarray_sum_ones(B);
 
@@ -42,7 +41,9 @@ select1 * select1_new(bitarray * B)
     for(u64 chunk = 0; chunk < n_level0; chunk++)
     {
         S->L8[chunk].i_word = pos;
-        S->L8[chunk].n_below = found_1s;
+        //S->L8[chunk].n_below = found_1s;
+        assert(SELECT1_L0*chunk - found_1s < 64);
+        S->L8[chunk].delta_count[0] = (u8) (SELECT1_L0*chunk - found_1s);
         //printf("Chunk %lu starts at pos %lu\n", chunk, pos);
         //printf("Bits below: %lu\n", S->L8[chunk].n_below);
 
@@ -109,24 +110,11 @@ u64 select1_get(const select1 * S, u64 i)
     assert(i <= S->n_ones);
     u64 l0 = i/SELECT1_L0;
     select1_64 chunk = S->L8[l0];
-    if(0){
-        printf("[i=%lu l0=%lu chunk.i_word= %lu, chunk.n_below= %lu]\n",
-               i, l0, chunk.i_word, chunk.n_below);
-    }
-    if(0){
-        u64 nfound = 0;
-        for(u64 kk = 0; kk < chunk.i_word; kk++)
-        {
-            nfound += (u64) __builtin_popcountl(S->B->data[kk]);
-        }
-        if(nfound != chunk.n_below){
-            printf("nfound=%lu nbelow=%lu\n", nfound, chunk.n_below);
-            assert(nfound == chunk.n_below);
-        }
-    }
-    return chunk.i_word*64LU + select1_raw(S->B->data + chunk.i_word,
-                                         S->B->n_bits/64 + 1 - chunk.i_word,
-                                         i - chunk.n_below);
+
+    u64 n_below = SELECT1_L0*l0 - chunk.delta_count[0];
+    return chunk.i_word*64LU + select1_raw(S->bits + chunk.i_word,
+                                           0, //S->B->n_bits/64 + 1 - chunk.i_word,
+                                           i - n_below);
 }
 
 void select1_free(select1 * S)
