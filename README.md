@@ -146,32 +146,30 @@ $ ./bits --benchmark 2
 Reporting average rdts time for selecting a random 1 in an array
 with approximately 50% density. Random access pattern.
 
-|             N | T_select1 | T_select1c | T_array |
-|--------------:|----------:|-----------:|--------:|
-|           512 |       398 |        385 |      70 |
-|         1,024 |       402 |        388 |      70 |
-|         2,048 |       414 |        387 |      70 |
-|         4,096 |       413 |        394 |      70 |
-|         8,192 |       394 |        373 |      66 |
-|        16,384 |       353 |        335 |      60 |
-|        32,768 |       437 |        408 |      74 |
-|        65,536 |       413 |        386 |      75 |
-|       131,072 |       414 |        386 |      82 |
-|       262,144 |       419 |        388 |      89 |
-|       524,288 |       417 |        382 |     103 |
-|     1,048,576 |       385 |        350 |     149 |
-|     2,097,152 |       359 |        322 |     215 |
-|     4,194,304 |       371 |        324 |     309 |
-|     8,388,608 |       383 |        333 |     367 |
-|    16,777,216 |       398 |        339 |     407 |
-|    33,554,432 |       413 |        343 |     427 |
-|    67,108,864 |       486 |        350 |     447 |
-|   134,217,728 |       663 |        393 |     532 |
-|   268,435,456 |       811 |        486 |     624 |
-|   536,870,912 |       940 |        578 |     680 |
-| 1,073,741,824 |     1,015 |        628 |     708 |
-| 2,147,483,648 |     1,096 |        678 |     740 |
-| 4,294,967,296 |     1,077 |        662 |     727 |
+|             N | T_select1 | T_select1c | T_select1d | T_array |
+|--------------:|----------:|-----------:|-----------:|--------:|
+|           512 |       398 |        385 |        385 |      70 |
+|         1,024 |       408 |        392 |        390 |      71 |
+|         2,048 |       410 |        385 |        382 |      69 |
+|         4,096 |       358 |        343 |        334 |      60 |
+|         8,192 |       365 |        348 |        340 |      61 |
+|        16,384 |       434 |        409 |        403 |      74 |
+|        32,768 |       417 |        392 |        388 |      72 |
+|        65,536 |       418 |        392 |        389 |      76 |
+|       131,072 |       415 |        386 |        384 |      82 |
+|       262,144 |       421 |        390 |        388 |      94 |
+|       524,288 |       431 |        396 |        392 |     109 |
+|     1,048,576 |       429 |        391 |        389 |     162 |
+|     2,097,152 |       433 |        391 |        385 |     282 |
+|     4,194,304 |       437 |        381 |        372 |     347 |
+|     8,388,608 |       450 |        388 |        369 |     385 |
+|    16,777,216 |       502 |        421 |        393 |     431 |
+|    33,554,432 |       442 |        366 |        337 |     419 |
+|    67,108,864 |       590 |        429 |        386 |     463 |
+|   134,217,728 |       663 |        402 |        319 |     534 |
+|   268,435,456 |       835 |        506 |        319 |     632 |
+
+select1d is incomplete, but might be the basis for the next version.
 
 </details>
 
@@ -216,21 +214,30 @@ $ ./bits --benchmark 3
 
 ## Notes/links
 
+- Things are designed to work with u64 but could of course be more
+  memory efficient if u32 is the design case ... simpler to do in a
+  language with templates or comptime abilities.
+
 - Timings typically depends on the density of 1's as well as the
   access pattern. Small test sizes gives the overhead of the bit
   manipulations while the large sizes reveals cache misses.
 
-- Arrays, typically representing LUTs, are `u64`.
+- Where the benchmarks compare to arrays, those are represented by
+  `u64` words..
 
-- [Time Stamp
-Counter](https://en.wikipedia.org/wiki/Time_Stamp_Counter) used for
-the timings via the `__rdtscp` intrinsics.
+- Timings are done by reading the [Time Stamp
+Counter](https://en.wikipedia.org/wiki/Time_Stamp_Counter) via the
+`__rdtscp` intrinsics.
 
-- [Sean Eron Anderson's Bit Twiddling Hacks](https://graphics.stanford.edu/~seander/bithacks.html)
+- Some fun things can be found here: [Sean Eron Anderson's Bit
+  Twiddling
+  Hacks](https://graphics.stanford.edu/~seander/bithacks.html), most
+  likely the compiler can figure out some of them even without explicit code.
 
-- For see [Builtin Bit Operations in GCC](https://gcc.gnu.org/onlinedocs/gcc/Bit-Operation-Builtins.html)
-
-- `x86intrin.h`
+- It is not always necessary to write asm code, see [Builtin Bit
+  Operations in
+  GCC](https://gcc.gnu.org/onlinedocs/gcc/Bit-Operation-Builtins.html)
+  as well as your local copy of `x86intrin.h`
 
 [^3]: [The Elias–Fano coding method by Giulio Ermanno
 Pibiri](https://jermp.github.io/assets/pdf/notes/elias_fano_notes.pdf)

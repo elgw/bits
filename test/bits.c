@@ -20,7 +20,8 @@
 #include "select1_ut.h"
 #include "select1c.h"
 #include "select1c_ut.h"
-
+#include "select1d.h"
+#include "select1d_ut.h"
 
 static void benchmark_varray_vs_array(const u64 n, const u64 bits){
     u64 * A = malloc(n*sizeof(u64));
@@ -266,6 +267,8 @@ static void benchmark_select1_vs_lut(const u64 n){
 
     select1 * s1 = select1_new(B);
     select1c * s1c = select1c_new(B);
+    select1c * s1d = select1d_new(B);
+
     const u64 n_ones = s1->n_ones;
     // time for benchmark
 
@@ -273,6 +276,7 @@ static void benchmark_select1_vs_lut(const u64 n){
     u64 t_array = 0;
     u64 t_s1 = 0;
     u64 t_s1c = 0;
+    u64 t_s1d = 0;
 
     u64 t0, t1;
     u64 idx;
@@ -283,6 +287,7 @@ static void benchmark_select1_vs_lut(const u64 n){
         u64 s1_array = 0;
         u64 s1_s1 = 0;
         u64 s1_s1c = 0;
+        u64 s1_s1d = 0;
 
         idx = 1 + (u64) rand() % (n_ones-1);
 
@@ -301,6 +306,11 @@ static void benchmark_select1_vs_lut(const u64 n){
         t1 = __rdtscp(&cpuid);
         t_s1c += t1-t0;
 
+        t0 = __rdtscp(&cpuid);
+        s1_s1d = select1c_get(s1c, idx-1);
+        t1 = __rdtscp(&cpuid);
+        t_s1d += t1-t0;
+
 
         if(0){
             printf("t s1  = %lu (%lu)\n", t_s1,     s1_s1);
@@ -313,10 +323,11 @@ static void benchmark_select1_vs_lut(const u64 n){
             exit(EXIT_FAILURE);
         }
     }
-    printf("| %'lu | %'.0f | %'.0f | %'.0f |\n",
+    printf("| %'lu | %'.0f | %'.0f | %'.0f | %'.0f |\n",
            n,
            (double) t_s1/ (double) n_sample,
            (double) t_s1c/ (double) n_sample,
+           (double) t_s1d/ (double) n_sample,
            (double) t_array/(double) n_sample);
 
     select1_free(s1);
@@ -327,8 +338,8 @@ static void benchmark_select1_vs_lut(const u64 n){
 static void run_benchmark_select1_vs_lut(void){
     printf("Reporting average rdts time\n");
     u64 n = 512*1;
-    printf("| N   | T_select1 | T_select1c | T_array |\n");
-    printf("| --: |       --: |        --: |     --: |\n");
+    printf("| N   | T_select1 | T_select1c | T_select1d   | T_array |\n");
+    printf("| --: |       --: |        --: |          --: |     --: |\n");
     while(n < 3e10){
         benchmark_select1_vs_lut(n);
         n*=2;
@@ -465,6 +476,7 @@ int main(int argc, char ** argv)
     rank1_ut(conf->verbose);
     select1_ut(conf->verbose);
     select1c_ut(conf->verbose);
+    select1d_ut(conf->verbose);
     cindex_ut(conf->verbose);
     config_free(conf);
     printf("All tests passed successfully. Tests not tested :)\n");

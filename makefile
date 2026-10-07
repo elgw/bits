@@ -29,7 +29,9 @@ rank1_ut.o \
 select1.o \
 select1_ut.o \
 select1c.o \
-select1c_ut.o
+select1c_ut.o \
+select1d.o \
+select1d_ut.o
 
 SRCDIR=src/
 
