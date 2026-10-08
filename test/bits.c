@@ -23,6 +23,11 @@
 #include "select1d.h"
 #include "select1d_ut.h"
 
+// TODO
+// Pin to a specific cpu,
+// see https://www.jonathanbeard.io/blog/2015/01/07/system-timing.html
+// Report also by time?
+
 static void benchmark_varray_vs_array(const u64 n, const u64 bits){
     u64 * A = malloc(n*sizeof(u64));
     varray * V = varray_new(n, bits);
@@ -267,7 +272,7 @@ static void benchmark_select1_vs_lut(const u64 n){
 
     select1 * s1 = select1_new(B);
     select1c * s1c = select1c_new(B);
-    select1c * s1d = select1d_new(B);
+    select1d * s1d = select1d_new(B);
 
     const u64 n_ones = s1->n_ones;
     // time for benchmark
@@ -307,7 +312,7 @@ static void benchmark_select1_vs_lut(const u64 n){
         t_s1c += t1-t0;
 
         t0 = __rdtscp(&cpuid);
-        s1_s1d = select1c_get(s1c, idx-1);
+        s1_s1d = select1d_get(s1d, idx-1);
         t1 = __rdtscp(&cpuid);
         t_s1d += t1-t0;
 
@@ -315,6 +320,11 @@ static void benchmark_select1_vs_lut(const u64 n){
         if(0){
             printf("t s1  = %lu (%lu)\n", t_s1,     s1_s1);
             printf("t a   = %lu (%lu)\n", t_array,  s1_array);
+        }
+        if(0){
+            if(s1_s1d != s1_array){
+                assert(0);
+            }
         }
         if((s1_s1 != s1_array) | (s1_s1c != s1_array)){
             printf("%s:%d Error results differ\n", __FILE__, __LINE__);
