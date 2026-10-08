@@ -42,7 +42,7 @@ for manipulating binary arrays
 - rank1, in $`\mathcal{O}(n)`$ time but no memory overhead
 - select1, in $`\mathcal{O}(n)`$ time but no memory overhead
 
-<details><summary>Timings</summaray>
+<details><summary>Timings</summary>
 
 ```
 $ ./bits --benchmark 5
