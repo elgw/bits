@@ -28,6 +28,81 @@
 // see https://www.jonathanbeard.io/blog/2015/01/07/system-timing.html
 // Report also by time?
 
+static void benchmark_bitarray(const u64 n)
+{
+    u8 * A = calloc(n, sizeof(u8));
+    bitarray * B = bitarray_new(n);
+    for(u64 kk = 0; kk < n; kk++){
+        if(rand()%2){
+            A[kk] = 1;
+            bitarray_set(B, kk, 1);
+        }
+    }
+        // time for benchmark
+    u64 res_array = 0;
+    u64 res_bit = 0;
+    u64 t_array = 0;
+    u64 t_bit = 0;
+    u64 t0, t1;
+    u64 idx;
+    u32 cpuid;
+    u64 n_sample = 1e6;
+    for(u64 ii = 0; ii < n_sample; ii++)
+    {
+        idx = (u64) rand() % n;
+        if( rand() % 2 == 0){
+            t0 = __rdtscp(&cpuid);
+            res_array = A[idx];
+            t1 = __rdtscp(&cpuid);
+            t_array += t1-t0;
+            //idx = rand() % (n-1);
+            t0 = __rdtscp(&cpuid);
+            res_bit = bitarray_get(B, idx);
+            t1 = __rdtscp(&cpuid);
+            t_bit += t1-t0;
+        } else {
+            t0 = __rdtscp(&cpuid);
+            res_bit = bitarray_get(B, idx);
+            t1 = __rdtscp(&cpuid);
+            t_bit += t1-t0;
+
+            t0 = __rdtscp(&cpuid);
+            res_array = A[idx];
+            t1 = __rdtscp(&cpuid);
+            t_array += t1-t0;
+        }
+
+        if(res_bit != res_array){
+            printf("%s:%d Error results differ\n", __FILE__, __LINE__);
+            printf("bitarray->%lu vs array->%lu\n", res_bit, res_array);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    printf("| %'lu | %'.0f | %'.0f |\n",
+           n,
+           (double) t_bit    / (double) n_sample,
+           (double) t_array  / (double) n_sample);
+
+    bitarray_free(B);
+    free(A);
+    return;
+}
+
+static void run_benchmark_bitarray_vs_u8(void){
+
+    printf("Reporting average rdts time\n");
+    u64 n = 128;
+    printf("| N   | T_bitarray  |    T_u8 |\n");
+    printf("| --: |         --: |     --: |\n");
+    while(n < 3e9){
+        benchmark_bitarray(n);
+        n*=2;
+    }
+}
+
+
+
 static void benchmark_varray_vs_array(const u64 n, const u64 bits){
     u64 * A = malloc(n*sizeof(u64));
     varray * V = varray_new(n, bits);
@@ -404,7 +479,8 @@ static void usage(void){
            "n=1 benchmark rank1\n\t"
            "n=2 benchmark select1\n\t"
            "n=3 benchmark cindex\n\t"
-           "n=4 benchmark varray\n");
+           "n=4 benchmark varray\n\t"
+           "n=5 benchmark bitarray\n");
 
     printf("--help\n\tShow this help message\n");
     printf("--dummy\n\tUsed for some quick dev tests\n");
@@ -470,6 +546,9 @@ int main(int argc, char ** argv)
         break;
     case 4:
         run_benchmark_varray_vs_array();
+        break;
+    case 5:
+        run_benchmark_bitarray_vs_u8();
         break;
     default:
         printf("No benchmark with id %d\n", conf->benchmark);

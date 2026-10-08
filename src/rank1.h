@@ -13,6 +13,8 @@ typedef uint8_t u8;
 // what is tabulated is the **exclusive prefix sums**
 // i.e. rank1->bins[b].rankp is rank1(512*b-1).
 // this choice requires 1 extra rank1_bin
+// Would be fun to see how this performs in zig
+// where the language supports u9[7]. Would at least look simpler in code :)
 typedef struct {
     u64 rankp; // 1 64-bit number
     u64 seven; // 7 9-bit numbers

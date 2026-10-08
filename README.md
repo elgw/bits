@@ -42,6 +42,44 @@ for manipulating binary arrays
 - rank1, in $`\mathcal{O}(n)`$ time but no memory overhead
 - select1, in $`\mathcal{O}(n)`$ time but no memory overhead
 
+<details><summary>Timings</summaray>
+
+```
+$ ./bits --benchmark 5
+```
+
+Reporting the time it takes to read an element at a random position.
+
+|             N | T_bitarray | T_u8 |
+|--------------:|-----------:|-----:|
+|           128 |         37 |   34 |
+|           256 |         36 |   33 |
+|           512 |         36 |   33 |
+|         1,024 |         36 |   33 |
+|         2,048 |         36 |   33 |
+|         4,096 |         36 |   33 |
+|         8,192 |         36 |   33 |
+|        16,384 |         36 |   33 |
+|        32,768 |         36 |   33 |
+|        65,536 |         37 |   34 |
+|       131,072 |         37 |   35 |
+|       262,144 |         39 |   41 |
+|       524,288 |         41 |   52 |
+|     1,048,576 |         48 |   58 |
+|     2,097,152 |         56 |   61 |
+|     4,194,304 |         63 |   68 |
+|     8,388,608 |         70 |  174 |
+|    16,777,216 |         91 |  278 |
+|    33,554,432 |        151 |  328 |
+|    67,108,864 |        252 |  355 |
+|   134,217,728 |        326 |  376 |
+|   268,435,456 |        339 |  379 |
+|   536,870,912 |        361 |  386 |
+| 1,073,741,824 |        377 |  424 |
+| 2,147,483,648 |        385 |  525 |
+
+</details>
+
 ### **varray**
 variable bits per element array
 - set
@@ -225,6 +263,8 @@ $ ./bits --benchmark 3
 - Timings typically depends on the density of 1's as well as the
   access pattern. Small test sizes gives the overhead of the bit
   manipulations while the large sizes reveals cache misses.
+
+- Benchmarks are not consistently run on the same machine.
 
 - Where the benchmarks compare to arrays, those are represented by
   `u64` words..
