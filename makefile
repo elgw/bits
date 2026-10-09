@@ -1,7 +1,7 @@
 # https://www.gnu.org/software/make/manual/make.html
 
 CFLAGS = -Wall -Wextra -Wconversion -march=native
-LDFLAGS+=-lm
+LDFLAGS+=-lm -lpthread
 
 CFLAGS += -Isrc/
 

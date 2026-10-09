@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include <assert.h>
 #include <getopt.h>
 #include <locale.h>
@@ -7,6 +8,10 @@
 #include <stdlib.h>
 #include <time.h>
 #include <x86intrin.h>
+#include <sched.h>
+#include <unistd.h>
+#include <err.h>
+#include <pthread.h>
 
 #include "bitarray.h"
 #include "bitarray_ut.h"
@@ -23,10 +28,22 @@
 #include "select1d.h"
 #include "select1d_ut.h"
 
-// TODO
-// Pin to a specific cpu,
-// see https://www.jonathanbeard.io/blog/2015/01/07/system-timing.html
-// Report also by time?
+// pin the program to a specific cpu. 0-based id
+static void pin_to_cpu(size_t cpu_id){
+    cpu_set_t * set = CPU_ALLOC(cpu_id+1);
+    assert(set != NULL);
+    CPU_ZERO_S(CPU_ALLOC_SIZE(cpu_id+1), set);
+    CPU_SET(cpu_id, set);
+    if (sched_setaffinity(getpid(), sizeof(&set), set) == -1){
+        fprintf(stderr, "sched_setaffinity failed\n");
+        exit(EXIT_FAILURE);
+    }
+    CPU_FREE(set);
+    if( sched_yield() ){ // switch if not on that cpu
+        fprintf(stderr, "sched_yield failed\n");
+        exit(EXIT_FAILURE);
+    }
+}
 
 static void benchmark_bitarray(const u64 n)
 {
@@ -530,6 +547,7 @@ config_new(int argc, char ** argv)
 
 int main(int argc, char ** argv)
 {
+    pin_to_cpu(0);
     setlocale(LC_NUMERIC, "");
     config * conf = config_new(argc, argv);
     switch(conf->benchmark){
