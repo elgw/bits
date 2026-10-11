@@ -1,5 +1,7 @@
 # https://www.gnu.org/software/make/manual/make.html
 
+# clang12 or gcc17 required for __builtin_bitreverse64
+CC=clang
 CFLAGS = -Wall -Wextra -Wconversion -march=native
 LDFLAGS+=-lm -lpthread
 
@@ -19,6 +21,7 @@ endif
 endif
 
 OBJECTS=bitarray.o \
+elias_codes.o \
 varray.o \
 cindex.o \
 rank1.o \

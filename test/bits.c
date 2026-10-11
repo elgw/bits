@@ -27,6 +27,7 @@
 #include "select1c_ut.h"
 #include "select1d.h"
 #include "select1d_ut.h"
+#include "elias_codes.h"
 
 // pin the program to a specific cpu. 0-based id
 static void pin_to_cpu(size_t cpu_id){
@@ -549,6 +550,7 @@ int main(int argc, char ** argv)
 {
     pin_to_cpu(0);
     setlocale(LC_NUMERIC, "");
+    //elias_codes_ut();
     config * conf = config_new(argc, argv);
     switch(conf->benchmark){
     case 0:
