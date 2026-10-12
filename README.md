@@ -1,8 +1,10 @@
 Warning, throwaway code ahead! This repo provides some functions for
 working on bit arrays and also a few succint data
-structures. Implemented for fun and learning. Not elegant, not fastest
-in the world, probably at least one bug per line. If you need these
-things, check out something more mature like
+structures.
+
+Implemented for fun and learning (while reading [^3]). Neither elegant
+nor the fastest in the world, and with approximately one bug per
+line. If you need these things, check out something more mature like
 [sux-rs](https://github.com/vigna/sux-rs).
 
 
@@ -220,7 +222,6 @@ Elias-Fano representation [^2], [^3] of non-decreasing sequences.
 
 - Using bitarray, varray and select1c from above.
 
-
 <details><summary>Timings</summary>
 
 ``` shell
@@ -251,6 +252,38 @@ $ ./bits --benchmark 3
 |   268,435,456 |      843 |     633 |         0.08 |
 |   536,870,912 |      938 |     690 |         0.08 |
 | 1,073,741,824 |    1,061 |     749 |         0.08 |
+
+</details>
+
+### **elias_codes**
+Forward and backward transforms for the $`\gamma`$ and $`\delta`$ self
+delimiting Elias codes. Also routines for encoding and decoding arrays.
+
+<details><summary>Timings</summary>
+
+```
+$ stress -c 8 -t 8 ; ./bits --benchmark 6
+stress: info: [3406134] dispatching hogs: 8 cpu, 0 io, 0 vm, 0 hdd
+stress: info: [3406134] successful run completed in 8s
+Elias gamma, encode 1, ..., 1000000
+   Took 6352632, or 6.4 per element
+Elias gamma, encode and decode 1, ..., 1000000
+   Took 14812200, or 14.8 per element
+Elias delta, encode 1, ..., 1000000
+   Took 7089732, or 7.1 per element
+Elias delta, encode and decode 1, ..., 1000000
+   Took 13559940, or 13.6 per element
+Elias gamma array, encoding 1, ... 1000000
+   Encoded 1000000 numbers using 36902912 bits (as u64 64000000 bits)
+   Took 23843376, or 23.8 per element
+   Decoded 1000000 numbers
+   Took 11515176, or 11.5 per element
+Elias delta array, encoding 1, ... 1000000
+   Encoded 1000000 numbers using 27885696 bits (as u64 64000000 bits)
+   Took 24985548, or 25.0 per element
+   Decoded 1000000 numbers
+   Took 17681004, or 17.7 per element
+```
 
 </details>
 
@@ -296,3 +329,5 @@ Heidelberg. [https://doi.org/10.1007/978-3-540-68552-4_12] Also
 available from
 [https://vigna.di.unimi.it/ftp/papers/Broadword.pdf] Code (rust)
 can be found at [https://github.com/vigna/sux-rs]
+
+[^3]: V. Mäkinen, D. Belazzougui, F. Cunial, and A. I. Tomescu, Genome-Scale Algorithm Design: Bioinformatics in the Era of High-Throughput Sequencing, 2nd ed. Cambridge: Cambridge University Press, 2023. [doi:10.1017/9781009341257](https://doi.org/10.1017/9781009341257)

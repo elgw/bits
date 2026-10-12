@@ -46,14 +46,6 @@ uint64_t
 egamma_decode_array(const uint64_t * encoded, uint64_t n_encoded,
                              uint64_t * decoded, uint64_t n_decoded);
 
-uint64_t
-edelta_encode_array(const uint64_t * decoded, uint64_t n_decoded,
-                             uint64_t * encoded, uint64_t n_encoded);
-
-uint64_t
-edelta_decode_array(const uint64_t * encoded, uint64_t n_encoded,
-                             uint64_t * decoded, uint64_t n_decoded);
-
 
 // return the number of bits needed to encode n
 uint64_t edelta_bits(uint64_t n);
@@ -61,3 +53,11 @@ uint64_t edelta_encode(uint64_t decoded);
 uint64_t edelta_decode(uint64_t decoded);
 
 void elias_codes_ut(int verbose);
+
+uint64_t
+edelta_encode_array(const uint64_t * decoded, uint64_t n_decoded,
+                    uint64_t * encoded, uint64_t n_encoded);
+
+uint64_t
+edelta_decode_array(const uint64_t * encoded, uint64_t n_encoded,
+                    uint64_t * decoded, uint64_t n_decoded);

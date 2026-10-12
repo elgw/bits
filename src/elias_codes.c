@@ -257,13 +257,13 @@ static void test_egamma_encode_array(int verbose){
     }
 
     u64 nenc = egamma_encode_array(values, w_decoded, encoded, w_encoded);
-    if(verbose > 0){
+    if(verbose > 1){
         printf("Could encode %lu/%lu values (%.1f bits per value)\n", nenc, w_decoded,
                (double)(64*w_encoded) / (double) nenc);
     }
     u64 ndec = egamma_decode_array(encoded, w_encoded, decoded, w_decoded);
     assert(ndec == nenc);
-    if(verbose > 0){
+    if(verbose > 1){
         printf("Could decode %lu/%lu values\n", ndec, w_decoded);
     }
     if(verbose > 1){
@@ -288,13 +288,13 @@ static void test_edelta_encode_array(int verbose){
     }
 
     u64 nenc = edelta_encode_array(values, w_decoded, encoded, w_encoded);
-    if(verbose > 0){
+    if(verbose > 1){
         printf("Could encode %lu/%lu values (%.1f bits per value)\n", nenc, w_decoded,
                (double)(64*w_encoded) / (double) nenc);
     }
     u64 ndec = edelta_decode_array(encoded, w_encoded, decoded, w_decoded);
     assert(ndec == nenc);
-    if(verbose > 0){
+    if(verbose > 1){
         printf("Could decode %lu/%lu values\n", ndec, w_decoded);
     }
     if(verbose > 1){
@@ -349,5 +349,5 @@ void elias_codes_ut(int verbose){
     test_egamma_encode_array(verbose);
     test_edelta_encode_array(verbose);
 
-
+    return;
 }

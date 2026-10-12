@@ -56,7 +56,7 @@ static void benchmark_bitarray(const u64 n)
             bitarray_set(B, kk, 1);
         }
     }
-        // time for benchmark
+    // time for benchmark
     u64 res_array = 0;
     u64 res_bit = 0;
     u64 t_array = 0;
@@ -480,7 +480,8 @@ void dummy(void){
 
 typedef struct {
     int verbose;
-    int benchmark;
+    u64 benchmark;
+    u64 test;
 } config;
 
 static void
@@ -489,7 +490,8 @@ config_free(config * conf){
     return;
 }
 
-static void usage(void){
+static void
+usage(void){
     printf("Usage: bits [ARGS]\n\n");
     printf("Possible arguments:\n");
     printf("--verbose v\n\tSet verbosity level to v\n");
@@ -498,7 +500,8 @@ static void usage(void){
            "n=2 benchmark select1\n\t"
            "n=3 benchmark cindex\n\t"
            "n=4 benchmark varray\n\t"
-           "n=5 benchmark bitarray\n");
+           "n=5 benchmark bitarray\n\t"
+           "n=6 benchmark Elias codes\n");
 
     printf("--help\n\tShow this help message\n");
     printf("--dummy\n\tUsed for some quick dev tests\n");
@@ -516,20 +519,21 @@ config_new(int argc, char ** argv)
         { "benchmark",  required_argument, NULL, '2' },
         { "dummy",      no_argument,       NULL, 'd' },
         { "help",       no_argument,       NULL, 'h' },
+        { "test",       required_argument, NULL, 't'},
         { NULL,           0,               NULL,  0  }
     };
     config * conf = calloc(1, sizeof(config));
     conf->verbose = 1;
     int ch;
     while((ch = getopt_long(argc, argv,
-                            "1:2:dh",
+                            "1:2:dht:",
                             longopts, NULL)) != -1) {
         switch(ch) {
         case '1':
             conf->verbose = atoi(optarg);
             break;
         case '2':
-            conf->benchmark = atoi(optarg);
+            conf->benchmark = (u64) atol(optarg);
             break;
         case 'd':
             dummy();
@@ -538,6 +542,9 @@ config_new(int argc, char ** argv)
         case 'h':
             usage();
             exit(EXIT_SUCCESS);
+        case 't':
+            conf->test = (u64) atol(optarg);
+            break;
         default:
             break;
         }
@@ -545,50 +552,216 @@ config_new(int argc, char ** argv)
     return conf;
 }
 
+void bench_elias_gamma_array(u64 n){
+    u64 t0, t1;
+    u32 cpuid;
+    printf("Elias gamma array, encoding 1, ... %lu\n", n);
+    u64 * numbers = calloc(n, sizeof(u64));
+
+    u64 req_bits = 0;
+    for(u64 kk = 1; kk <= n; kk++)
+    {
+        req_bits += egamma_bits(kk);
+    }
+    u64 ne = req_bits/64 + 1;
+    u64 * encoded = calloc(ne, sizeof(u64));
+
+    for(u64 kk = 1; kk <= n; kk++)
+    {
+        numbers[kk-1] = kk;
+    }
+
+    t0 = __rdtscp(&cpuid);
+    u64 nenc = egamma_encode_array(numbers, n, encoded, ne);
+    t1 = __rdtscp(&cpuid);
+
+    printf("   Encoded %lu numbers using %lu bits (as u64 %lu bits)\n",
+           nenc, ne*8*sizeof(u64), nenc*sizeof(u64)*8);
+    printf("   Took %lu, or %.1f per element\n", t1-t0,
+           (double) (t1-t0) / (double) nenc);
+
+    t0 = __rdtscp(&cpuid);
+    nenc = egamma_encode_array(numbers, n, encoded, ne);
+    t1 = __rdtscp(&cpuid);
+    printf("   Decoded %lu numbers\n",
+           nenc);
+    printf("   Took %lu, or %.1f per element\n", t1-t0,
+           (double) (t1-t0) / (double) nenc);
+
+    free(encoded);
+    free(numbers);
+    return;
+}
+
+void bench_elias_delta_array(u64 n){
+    u64 t0, t1;
+    u32 cpuid;
+    printf("Elias delta array, encoding 1, ... %lu\n", n);
+    u64 * numbers = calloc(n, sizeof(u64));
+
+    u64 req_bits = 0;
+    for(u64 kk = 1; kk <= n; kk++)
+    {
+        req_bits += edelta_bits(kk);
+    }
+    u64 ne = req_bits/64 + 1;
+    u64 * encoded = calloc(ne, sizeof(u64));
+
+    for(u64 kk = 1; kk <= n; kk++)
+    {
+        numbers[kk-1] = kk;
+    }
+
+    t0 = __rdtscp(&cpuid);
+    u64 nenc = edelta_encode_array(numbers, n, encoded, ne);
+    t1 = __rdtscp(&cpuid);
+
+    printf("   Encoded %lu numbers using %lu bits (as u64 %lu bits)\n",
+           nenc, ne*8*sizeof(u64), nenc*sizeof(u64)*8);
+    printf("   Took %lu, or %.1f per element\n", t1-t0,
+           (double) (t1-t0) / (double) nenc);
+
+    t0 = __rdtscp(&cpuid);
+    nenc = edelta_encode_array(numbers, n, encoded, ne);
+    t1 = __rdtscp(&cpuid);
+    printf("   Decoded %lu numbers\n",
+           nenc);
+    printf("   Took %lu, or %.1f per element\n", t1-t0,
+           (double) (t1-t0) / (double) nenc);
+
+    free(encoded);
+    free(numbers);
+    return;
+}
+
+
+static void run_benchmark_elias_codes(){
+    u32 cpuid;
+    u64 n = 1000000;
+    u64 dummy = 0;
+    u64 t0, t1;
+
+    printf("Elias gamma, encode 1, ..., %lu\n", n);
+    dummy = 0;
+    t0 = __rdtscp(&cpuid);
+    for(u64 kk = 1; kk <= n; kk++){
+        dummy += egamma_encode(kk);
+    }
+    t1 = __rdtscp(&cpuid);
+    printf("%lu\r", dummy);
+    printf("   Took %lu, or %.1f per element\n", t1-t0,
+           (double) (t1-t0) / (double) n);
+
+    printf("Elias gamma, encode and decode 1, ..., %lu\n", n);
+    dummy = 0;
+    t0 = __rdtscp(&cpuid);
+    for(u64 kk = 1; kk <= n; kk++){
+        dummy += egamma_decode(egamma_encode(kk));
+    }
+    t1 = __rdtscp(&cpuid);
+    printf("%lu\r", dummy);
+    printf("   Took %lu, or %.1f per element\n", t1-t0,
+           (double) (t1-t0) / (double) n);
+
+
+    printf("Elias delta, encode 1, ..., %lu\n", n);
+    dummy = 0;
+    t0 = __rdtscp(&cpuid);
+    for(u64 kk = 1; kk <= n; kk++){
+        dummy += edelta_encode(kk);
+    }
+    t1 = __rdtscp(&cpuid);
+    printf("%lu\r", dummy);
+    printf("   Took %lu, or %.1f per element\n", t1-t0,
+           (double) (t1-t0) / (double) n);
+
+    printf("Elias delta, encode and decode 1, ..., %lu\n", n);
+    dummy = 0;
+    t0 = __rdtscp(&cpuid);
+    for(u64 kk = 1; kk <= n; kk++){
+        dummy += edelta_decode(edelta_encode(kk));
+    }
+    t1 = __rdtscp(&cpuid);
+    printf("%lu\r", dummy);
+    printf("   Took %lu, or %.1f per element\n", t1-t0,
+           (double) (t1-t0) / (double) n);
+
+    bench_elias_gamma_array(n);
+    bench_elias_delta_array(n);
+
+    return;
+}
+
+
+
+typedef void (*unit_test)(int);
+typedef void (*benchmark)(void);
 
 int main(int argc, char ** argv)
 {
     pin_to_cpu(0);
     setlocale(LC_NUMERIC, "");
 
+    benchmark benchmarks[] = {
+        run_benchmark_rank1_vs_lut,
+        run_benchmark_select1_vs_lut,
+        run_benchmark_cindex_vs_lut,
+        run_benchmark_varray_vs_array,
+        run_benchmark_bitarray_vs_u8,
+        run_benchmark_elias_codes,
+        NULL
+    };
+
+    unit_test unit_tests[] = {
+        bitarray_ut,
+        varray_ut,
+        elias_codes_ut,
+        rank1_ut,
+        select1_ut,
+        select1_ut,
+        select1c_ut,
+        select1d_ut,
+        cindex_ut,
+        NULL,
+    };
+
+    u64 n_bm = 0;
+    while(benchmarks[n_bm] != NULL){n_bm++;};
+
+    u64 n_ut = 0;
+    while(unit_tests[n_ut] != NULL){n_ut++;};
+
     config * conf = config_new(argc, argv);
-    switch(conf->benchmark){
-    case 0:
-        break;
-    case 1:
-        run_benchmark_rank1_vs_lut();
-        break;
-    case 2:
-        run_benchmark_select1_vs_lut();
-        break;
-    case 3:
-        run_benchmark_cindex_vs_lut();
-        break;
-    case 4:
-        run_benchmark_varray_vs_array();
-        break;
-    case 5:
-        run_benchmark_bitarray_vs_u8();
-        break;
-    default:
-        printf("No benchmark with id %d\n", conf->benchmark);
-        config_free(conf);
-        return EXIT_FAILURE;
+    if(conf->benchmark > 0){
+        if(conf->benchmark > n_bm){
+            printf("There are only %lu benchmarks\n", n_bm);
+            exit(EXIT_FAILURE);
+        }
+        benchmarks[conf->benchmark-1]();
+        free(conf);
+        return EXIT_SUCCESS;
     }
 
     srand((u32) time(NULL));
 #ifdef NDEBUG
     printf("Compiled with -DNDEBUG, not all tests are enabled\n");
 #endif
-    elias_codes_ut(conf->verbose);
-    bitarray_ut(conf->verbose); // bitarray_ut.c
-    varray_ut(conf->verbose);
-    rank1_ut(conf->verbose);
-    select1_ut(conf->verbose);
-    select1c_ut(conf->verbose);
-    select1d_ut(conf->verbose);
-    cindex_ut(conf->verbose);
+
+    if(conf->test == 0){
+        for(u64 kk = 0; kk < n_ut; kk++){
+            printf("%lu/%lu\n", kk+1, n_ut);
+            unit_tests[kk](conf->verbose);
+        }
+        printf("All tests passed successfully. Tests not tested :)\n");
+    } else {
+        if(conf->test > n_ut){
+            printf("There are only %lu unit tests\n", n_ut);
+            exit(EXIT_FAILURE);
+        }
+        unit_tests[conf->test-1](conf->verbose);
+    }
+
     config_free(conf);
-    printf("All tests passed successfully. Tests not tested :)\n");
+
     return EXIT_SUCCESS;
 }
