@@ -261,7 +261,7 @@ delimiting Elias codes. Also routines for encoding and decoding arrays.
 
 $`\gamma`$ encoded numbers use $`2\left\lceil\log_2(x+1)\right\rceil-1`$ bits.
 
-$`\delta`$ encoded numbers use $`2\left\lceil\log_2\,\left\lceil\log_2(x+1)-1\right\rceil\right\rceil+\left\lceil\log2 (x+1)\right\rceil`$ bits.
+$`\delta`$ encoded numbers use $`2\left\lceil\log_2(\left\lceil\log_2(x+1)\right\rceil+1)\right\rceil+\left\lceil\log2 (x+1)\right\rceil -1`$ bits.
 
 <details><summary>Timings</summary>
 
