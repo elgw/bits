@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 // Elias codes
 // If L2(x) = ceil(log2(x))
 //
@@ -26,14 +28,36 @@
 //             |  ﾤ bin(L2(77))
 //             L2(L2(77)) - 1 0s
 
-typedef uint64_t u64;
 
-// Encode number and store the result in bits, starting at the bit start
-// return the number of bits needed
-u64 encode_gamma(u64 decoded);
-u64 decode_gamma(u64 encoded);
+// return the number of bits needed to encode n
+uint64_t egamma_bits(uint64_t n);
+uint64_t egamma_encode(uint64_t decoded);
+uint64_t egamma_decode(uint64_t encoded);
 
-u64 encode_delta(u64 decoded);
-u64 decode_delta(u64 decoded);
+// Encode n_decoded numbers and store in target
+// containing n_encoded uint64_t
+// return the number of values that could be encoded
+// in the target space
+uint64_t
+egamma_encode_array(const uint64_t * decoded, uint64_t n_decoded,
+                             uint64_t * encoded, uint64_t n_encoded);
 
-void elias_codes_ut(void);
+uint64_t
+egamma_decode_array(const uint64_t * encoded, uint64_t n_encoded,
+                             uint64_t * decoded, uint64_t n_decoded);
+
+uint64_t
+edelta_encode_array(const uint64_t * decoded, uint64_t n_decoded,
+                             uint64_t * encoded, uint64_t n_encoded);
+
+uint64_t
+edelta_decode_array(const uint64_t * encoded, uint64_t n_encoded,
+                             uint64_t * decoded, uint64_t n_decoded);
+
+
+// return the number of bits needed to encode n
+uint64_t edelta_bits(uint64_t n);
+uint64_t edelta_encode(uint64_t decoded);
+uint64_t edelta_decode(uint64_t decoded);
+
+void elias_codes_ut(int verbose);

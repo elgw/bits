@@ -14,7 +14,7 @@ ifeq ($(OPT),1)
 CFLAGS += -O3 -DNDEBUG
 LDFLAGS+=-flto
 else
-CFLAGS += -g3 -Og
+CFLAGS += -g3 -Og -fno-inline
 ifeq ($(SAN),1)
 CFLAGS += -fsanitize=address
 endif

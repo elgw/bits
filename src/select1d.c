@@ -70,7 +70,7 @@ select1d * select1d_new(bitarray * B)
             bpos = 64*wpos + select1_word(B->data[wpos], wanted_1s - found_1s - 1);
 
             u64 sspos = bpos - S->L8[chunk].idx;
-            if(sspos >= pow(2, 16)){
+            if(sspos >= (u64) pow(2, 16)){
                 // TODO: Switch to a sparse table for this chunk.
                 goto fail_construct;
             }

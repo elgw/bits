@@ -113,7 +113,7 @@ static void run_benchmark_bitarray_vs_u8(void){
     u64 n = 128;
     printf("| N   | T_bitarray  |    T_u8 |\n");
     printf("| --: |         --: |     --: |\n");
-    while(n < 3e9){
+    while(n < (u64) 3e9){
         benchmark_bitarray(n);
         n*=2;
     }
@@ -192,7 +192,7 @@ static void run_benchmark_varray_vs_array(void){
     u64 bits = 33;
     printf("| N   | T_varray_u%lu  | T_array_u64 |\n", bits);
     printf("| --: |       --: |     --: |\n");
-    while(n < 3e9){
+    while(n < (u64) 3e9){
         benchmark_varray_vs_array(n, bits);
         n*=2;
     }
@@ -257,7 +257,7 @@ static void run_benchmark_cindex_vs_lut(void){
     u64 n = 512*1;
     printf("| N   | T_cindex  | T_array | cindex_mem_Q | \n");
     printf("| --: |       --: |     --: |          --: |\n");
-    while(n < 3e9){
+    while(n < (u64) 3e9){
         benchmark_cindex_vs_lut(n);
         n*=2;
     }
@@ -344,7 +344,7 @@ static void run_benchmark_rank1_vs_lut(void){
     u64 n = 512*1;
     printf("| N   | T_rank1   | T_rank1b | T_array |\n");
     printf("| --: |       --: |     --:  |     --: |\n");
-    while(n < 3e9){
+    while(n < (u64) 3e9){
         benchmark_rank1_vs_lut(n);
         n*=2;
     }
@@ -443,7 +443,7 @@ static void run_benchmark_select1_vs_lut(void){
     u64 n = 512*1;
     printf("| N   | T_select1 | T_select1c | T_select1d   | T_array |\n");
     printf("| --: |       --: |        --: |          --: |     --: |\n");
-    while(n < 3e10){
+    while(n < (u64) 3e10){
         benchmark_select1_vs_lut(n);
         n*=2;
     }
@@ -550,7 +550,7 @@ int main(int argc, char ** argv)
 {
     pin_to_cpu(0);
     setlocale(LC_NUMERIC, "");
-    //elias_codes_ut();
+
     config * conf = config_new(argc, argv);
     switch(conf->benchmark){
     case 0:
@@ -580,6 +580,7 @@ int main(int argc, char ** argv)
 #ifdef NDEBUG
     printf("Compiled with -DNDEBUG, not all tests are enabled\n");
 #endif
+    elias_codes_ut(conf->verbose);
     bitarray_ut(conf->verbose); // bitarray_ut.c
     varray_ut(conf->verbose);
     rank1_ut(conf->verbose);
