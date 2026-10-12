@@ -2,7 +2,7 @@ Warning, throwaway code ahead! This repo provides some functions for
 working on bit arrays and also a few succint data
 structures.
 
-Implemented for fun and learning (while reading [^3]). Neither elegant
+Implemented for fun and learning (while reading [^4]). Neither elegant
 nor the fastest in the world, and with approximately one bug per
 line. If you need these things, check out something more mature like
 [sux-rs](https://github.com/vigna/sux-rs).
@@ -330,4 +330,4 @@ available from
 [https://vigna.di.unimi.it/ftp/papers/Broadword.pdf] Code (rust)
 can be found at [https://github.com/vigna/sux-rs]
 
-[^3]: V. Mäkinen, D. Belazzougui, F. Cunial, and A. I. Tomescu, Genome-Scale Algorithm Design: Bioinformatics in the Era of High-Throughput Sequencing, 2nd ed. Cambridge: Cambridge University Press, 2023. [doi:10.1017/9781009341257](https://doi.org/10.1017/9781009341257)
+[^4]: V. Mäkinen, D. Belazzougui, F. Cunial, and A. I. Tomescu, Genome-Scale Algorithm Design: Bioinformatics in the Era of High-Throughput Sequencing, 2nd ed. Cambridge: Cambridge University Press, 2023. [doi:10.1017/9781009341257](https://doi.org/10.1017/9781009341257)
