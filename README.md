@@ -259,7 +259,14 @@ $ ./bits --benchmark 3
 Forward and backward transforms for the $`\gamma`$ and $`\delta`$ self
 delimiting Elias codes. Also routines for encoding and decoding arrays.
 
+$`\gamma`$ encoded numbers use $`2\left\lceil\log_2(x+1)\right\rceil-1`$ bits.
+
+$`\delta`$ encoded numbers use $`\2\log_2\,\log_2(x+1)-1+\log2 (x+1)`$ bits.
+
 <details><summary>Timings</summary>
+
+The time needed for encoding/decoding routines grows with the size of
+the numbers.
 
 ```
 $ stress -c 8 -t 8 ; ./bits --benchmark 6
