@@ -28,6 +28,7 @@
 #include "select1d.h"
 #include "select1d_ut.h"
 #include "elias_codes.h"
+#include "bitpos.h"
 
 // pin the program to a specific cpu. 0-based id
 static void pin_to_cpu(size_t cpu_id){
@@ -701,21 +702,66 @@ select1_raw(const u64 * BA,
         n -= (u64) __builtin_popcountl(BA[i++]);
     }
 
-    return i*64 + (u64)  __builtin_ctzl(_pdep_u64(1LU << (n-1), BA[i]));
+    return i*64 + bitpos(BA[i], n-1);
+}
+
+static u64 select1_word(u64 word, u64 i){
+
+    return (u64) __builtin_ctzl(_pdep_u64(1LU << i, word));
+}
+
+static void print_binary(u64 x, u64 _nb){
+    int nb = (int) _nb;
+    while(nb > 0)
+    {
+        if(nb == 32){
+            printf(" ");
+        }
+        printf("%ld", x % 2);
+        x/=2;
+        nb--;
+    }
+}
+
+static void print_binaryl(const char * s, u64 x){
+    printf("%s: ", s);
+    print_binary(x, 64);
+    printf("\n");
 }
 
 void run_benchmark_linear_select1(void){
+
+    bitarray * B1 = bitarray_new(64);
+    bitarray_reset1(B1);
+    for(u64 kk = 0; kk < 64; kk++){
+        assert(bitpos(B1->data[0], kk) == select1_word(B1->data[0], kk));
+    }
+    for(u64 kk = 0; kk < 100000; kk++){
+        u64 w = (u64) rand() + 1;
+        w = w << 32;
+        w += (u64) rand() + 1;
+        u64 what = 0;
+        if(bitpos(w, what) != select1_word(w, what)){
+            print_binaryl("w", w); // printf("0x%016lx\n", w);
+            printf("%lu vs %lu\n", bitpos(w, what), select1_word(w, what));
+            exit(EXIT_FAILURE);
+        }
+    }
+    bitarray_free(B1);
+
+
     u64 n = 100000000;
-    bitarray * B = bitarray_new(n);
+    bitarray * B = bitarray_new(n+64);
     bitarray_reset1(B); // set all to 1
     u32 cpuid;
     u64 t0, t1;
     u64 dummy = 0;
-    printf("| bit set | T_select1_raw |\n");
+    volatile u64 spos = select1_raw(B->data, 1); // put the function in cache
+    printf("| bit set | T_bitpos |\n");
     printf("| --:             | --:         |\n");
     for(u64 pos = 1; pos < n; pos*=2){
         t0 = __rdtscp(&cpuid);
-        u64 spos = select1_raw(B->data, pos);
+        spos = select1_raw(B->data, pos);
         t1 = __rdtscp(&cpuid);
         assert(spos+1 == pos);
         //printf("ref:%lu ans:%lu\n", pos, spos);

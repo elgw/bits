@@ -19,6 +19,7 @@ static u64 BB(u64 x){
     return 64 - (u64) __builtin_clzl(x);
 }
 
+
 static void print_binary(u64 x, u64 _nb){
     int nb = (int) _nb;
     while(nb > 0)
@@ -37,6 +38,7 @@ static void print_binaryl(const char * s, u64 x){
     print_binary(x, 64);
     printf("\n");
 }
+
 
 u64 egamma_bits(u64 n){
     //raise(SIGSEGV);

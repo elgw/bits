@@ -6,18 +6,10 @@
 #include <signal.h>
 #include <x86intrin.h>
 
+#include "bitpos.h"
 #include "select1c.h"
 
 #define SELECT1C_L0 (1024LU) // Number of 1's per chunk
-
-// Return the 0-based position of the ith 1 of the word
-// i.e., select1_word(0xffffffffffffffff, kk) -> kk, kk \in [0, 63]
-// returns 64 if there are less than i 1s
-// i.e. select1_word(0LU, kk) -> 64
-static u64 select1_word(u64 word, u64 i){
-    // https://ziggit.dev/t/find-the-nth-set-bit/14391
-    return (u64) __builtin_ctzl(_pdep_u64(1LU << i, word));
-}
 
 select1c * select1c_new(bitarray * B)
 {
@@ -53,7 +45,8 @@ select1c * select1c_new(bitarray * B)
             found_1s += (u64) __builtin_popcountl(B->data[wpos++]);
         }
         // Position with bit-accuracy
-        bpos = 64*wpos + select1_word(B->data[wpos], wanted_1s - found_1s - 1);
+        //bpos = 64*wpos + select1_word(B->data[wpos], wanted_1s - found_1s - 1);
+        bpos = 64*wpos + bitpos(B->data[wpos], wanted_1s - found_1s - 1 );
         assert(bitarray_select1(B, chunk*SELECT1C_L0 + 1) == bpos);
         S->L8[chunk].idx = bpos;
     }
@@ -95,8 +88,7 @@ u64 select1c_get(const select1c * S, u64 i)
     assert(nfound < i);
 
     // Final selection in a single word
-    assert(select1_word(S->bits[wpos], i-nfound-1) < 64);
-    return wpos*64 + select1_word(S->bits[wpos], i-nfound-1);
+    return wpos*64 + bitpos(S->bits[wpos], i-nfound-1);
 }
 
 void select1c_free(select1c * S)

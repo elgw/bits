@@ -5,6 +5,10 @@ CC=clang
 CFLAGS = -Wall -Wextra -Wconversion -march=native
 LDFLAGS+=-lm -lpthread
 
+# Use software emulation of pded where missing or slow
+# read by bitpos.h
+CFLAGS+=-DNOPDEP
+
 CFLAGS += -Isrc/
 
 OPT?=0

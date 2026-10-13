@@ -5,7 +5,7 @@
 #include <math.h>
 #include <signal.h>
 #include <x86intrin.h>
-
+#include "bitpos.h"
 #include "select1.h"
 
 // To test:
@@ -74,44 +74,9 @@ select1_raw(const u64 * BA,
     while(n > (u64) __builtin_popcountl(BA[i])){
         n -= (u64) __builtin_popcountl(BA[i++]);
     }
-    return i*64 +  (u64) __builtin_ctzl(_pdep_u64(1LU << (n-1), BA[i]));
-}
-#if 0
-static u64
-select1_rawx(const u64 * BA,
-            __attribute__((unused)) const u64 n_BA, // number of u64s to scan
-            const u64 n) // number of the '1' to find
-{
-    u64 nfound = 0;
-    u64 i = 0;
 
-    // Scan a 64-bit word at a time until we know
-    // that the bit that we are searching for is in the next
-    while(nfound + (u64) __builtin_popcountl(BA[i]) < n){
-        nfound += (u64) __builtin_popcountl(BA[i++]);
-    }
-    // https://ziggit.dev/t/find-the-nth-set-bit/14391
-    u64 J = (u64) __builtin_ctzl(_pdep_u64(1LU << (n-nfound-1), BA[i]));
-    return i*64 + J;
-
-#if 0
-    u64 j = 0;
-    while(1)
-    {
-        nfound+= (BA[i] & (1LU << j)) > 0;
-        if(nfound == n){
-            //printf("(i=%lu, j=%lu)\n", i, j);
-            assert(j==J);
-            //printf("j=%lu, J=%lu\n", j, J);
-            return i*64+j;
-        }
-        j++;
-    }
-    assert(0);
-    return 0;
-#endif
+    return i*64 + bitpos(BA[i], n-1);
 }
-#endif
 
 u64 select1_get(const select1 * S, u64 i)
 {

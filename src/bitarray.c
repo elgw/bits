@@ -129,12 +129,12 @@ u64 bitarray_select1(const bitarray * B, const u64 n)
 
 void bitarray_reset(bitarray * B)
 {
-    memset(B->data, 0, B->mem_allocated);
+    memset(B->data, 0, B->n_bits/8);
 }
 
 void bitarray_reset1(bitarray * B)
 {
-    memset(B->data, 0xffff, B->mem_allocated);
+    memset(B->data, 0xffff, B->n_bits/8);
 }
 
 int pos_first_one(const u64 w){
