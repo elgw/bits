@@ -257,11 +257,15 @@ $ ./bits --benchmark 3
 
 ### **elias_codes**
 Forward and backward transforms for the $`\gamma`$ and $`\delta`$ self
-delimiting Elias codes. Also routines for encoding and decoding arrays.
+delimiting Elias codes. Also routines for encoding and decoding arrays
+(but no random access!).
 
 $`\gamma`$ encoded numbers use $`2\left\lceil\log_2(x+1)\right\rceil-1`$ bits.
 
 $`\delta`$ encoded numbers use $`2\left\lceil\log_2(\left\lceil\log_2(x+1)\right\rceil+1)\right\rceil+\left\lceil\log2 (x+1)\right\rceil -1`$ bits.
+
+Typical applications would be to encode the differences between
+elements in sorted array of unique numbers.
 
 <details><summary>Timings</summary>
 

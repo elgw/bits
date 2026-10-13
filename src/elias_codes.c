@@ -60,7 +60,12 @@ u64 egamma_decode(u64 encoded){
 }
 
 u64 edelta_bits(u64 n){
-    assert(n > 0);
+    #ifndef NDEBUG
+    if(n == 0){
+        fprintf(stderr, "ERROR: edelta_bits, Elias delta codes can't encode 0\n");
+        assert(n > 0);
+    }
+    #endif
     return (2*BB(BB(n)) + BB(n)-1);
 }
 
@@ -238,7 +243,9 @@ u64 edelta_decode_array(const u64 * encoded, u64 n_encoded,
         }
         //print_binaryl("D", D);
         decoded[kk] = edelta_decode(D);
-        assert(decoded[kk] > 0);
+        if(decoded[kk] == 0){
+            return kk;
+        }
         //printf("decoded[%lu] = %lu\n", kk, decoded[kk]);
         readpos += edelta_bits(decoded[kk]);
     }
@@ -346,6 +353,15 @@ void elias_codes_ut(int verbose){
         printf("%s : Elias Gamma (egamma_encode_array, decode_array)\n",
                __FILE__);
     }
+
+    u64 values[3] = {264, 214, 505};
+    u64 w = 0;
+    u64 nwritten = edelta_encode_array(values, 3, &w, 1);
+    if(nwritten != 3){
+        assert(0);
+        exit(EXIT_FAILURE);
+    }
+
     test_egamma_encode_array(verbose);
     test_edelta_encode_array(verbose);
 

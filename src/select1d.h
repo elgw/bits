@@ -6,9 +6,7 @@
 
 typedef struct {
     u64 idx;
-    u16 sub[4]; // 7 x 9bit might not be such a bad idea...
-    // but rather than storing the absolute offsets we might have to
-    // integrate the offsets
+    u64 sub[1];
 } select1d_64;
 
 typedef struct {

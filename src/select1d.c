@@ -7,9 +7,11 @@
 #include <x86intrin.h>
 
 #include "select1d.h"
+#include "elias_codes.h"
 
-#define SELECT1D_L0 (1024LU) // Number of 1's per chunk
-#define SELECT1D_L1 (256LU)  // Number of 1's per sub chunk
+#define SELECT1D_L0 (1500LU) // Number of 1's per chunk
+#define SELECT1D_L0_LOCATIONS 2LU
+#define SELECT1D_L1 (SELECT1D_L0/SELECT1D_L0_LOCATIONS)  // Number of 1's per sub chunk
 
 // Return the 0-based position of the ith 1 of the word
 // i.e., select1_word(0xffffffffffffffff, kk) -> kk, kk \in [0, 63]
@@ -45,6 +47,8 @@ select1d * select1d_new(bitarray * B)
     u64 wpos = 0; // word position
     u64 found_1s = 0;
     u64 bpos = 0; // bit position
+    u64 pos[SELECT1D_L0_LOCATIONS];
+    //printf("SELECT1D_L0_LOCATIONS=%lu\n", SELECT1D_L0_LOCATIONS);
     for(u64 chunk = 0; chunk < n_level; chunk++)
     {
         // Fast forward until the wanted '1' can be found in the next word
@@ -57,9 +61,12 @@ select1d * select1d_new(bitarray * B)
         bpos = 64*wpos + select1_word(B->data[wpos], wanted_1s - found_1s - 1);
         assert(bitarray_select1(B, chunk*SELECT1D_L0 + 1) == bpos);
         S->L8[chunk].idx = bpos;
-        for(u64 ss = 1; ss < 4; ss++){
+        pos[0] = bpos;
+        u64 ss = 1;
+        for(; ss < SELECT1D_L0_LOCATIONS; ss++){
             wanted_1s = SELECT1D_L0*chunk + SELECT1D_L1*ss + 1;
             if(wanted_1s > S->n_ones){
+                ss--;
                 break;
             }
             while(found_1s + (u64) __builtin_popcountl(B->data[wpos]) < wanted_1s)
@@ -74,12 +81,50 @@ select1d * select1d_new(bitarray * B)
                 // TODO: Switch to a sparse table for this chunk.
                 goto fail_construct;
             }
-            S->L8[chunk].sub[ss] = (u16) sspos;
+            pos[ss] = sspos;
             assert(bitarray_select1(B, chunk*SELECT1D_L0 + ss*SELECT1D_L1 + 1) == bpos);
         }
+        if(ss < 2){ continue; }
+
+#if 0
+        printf("Pos=[");
+        for(u64 kk = 0; kk < ss; kk++){
+            printf("%lu ", pos[kk]);
+        };
+        printf("]org\n");
+#endif
+        // Differentiate
+        for(u64 kk = ss-1; kk > 1; kk--){
+            pos[kk] = pos[kk]-pos[kk-1];
+        }
+
+#if 0
+        printf("Pos=[");
+        for(u64 kk = 0; kk < ss; kk++){
+            printf("%lu ", pos[kk]);
+            if(kk > 0){
+                assert(pos[kk] > 0);
+            }
+        };
+        printf("] delta\n");
+#endif
+
+#if 0
+        u64 bits = 0;
+        for(u64 kk = 1; kk+1 < ss; kk++){
+            bits += edelta_bits(pos[kk]);
+        }
+        printf("bits: %lu\n", bits);
+#endif
+        assert(ss > 1);
+        edelta_encode_array(pos+1, ss-1, S->L8[chunk].sub, 2);
+#if 0
+        printf("nwritten = %lu\n", nwritten);
+#endif
+        //exit(EXIT_FAILURE);
     }
     return S;
-fail_construct:
+ fail_construct:
     fprintf(stderr, "select1d_new failed, the 1s are too sparse\n");
     select1d_free(S);
     return NULL;
@@ -99,11 +144,36 @@ u64 select1d_get(const select1d * S, u64 i)
 #endif
 
     u64 l0 = i/SELECT1D_L0; // bin index
+    select1d_64 chunk = S->L8[l0]; // bin
+
     u64 l1 = (i - SELECT1D_L0*(i/SELECT1D_L0))/SELECT1D_L1;
-    assert(l1 < 4);
-    select1d_64 chunk = S->L8[l0];; // bin
-    u64 bpos = (chunk.idx + (u64) chunk.sub[l1]);
-    //printf("(%lu, %lu)\n", chunk.idx, (u64) chunk.sub[l1]);
+    u64 sub[SELECT1D_L0_LOCATIONS];
+    sub[0] = chunk.idx;
+    if(l1 > 0){
+        u64 ndecoded = edelta_decode_array(chunk.sub, SELECT1D_L0_LOCATIONS-1,
+                                           sub+1, SELECT1D_L0_LOCATIONS-1);
+#if 0
+        printf("Decoded:\n");
+        for(int kk = 0; kk <= ndecoded; kk++){
+            printf("%lu ", sub[kk]);
+        }
+        printf("\n");
+#endif
+        // integrate
+        for(u64 kk = 1; kk <= ndecoded; kk++){
+            sub[kk] = sub[kk] + sub[kk-1];
+        }
+#if 0
+        printf("Decoded: ");
+        for(int kk = 0; kk <= ndecoded; kk++){
+            printf("%lu ", sub[kk]);
+        }
+        printf("\n");
+#endif
+        l1 > ndecoded ? l1 = ndecoded : 0;
+        //printf("l1=%lu\n", l1);
+    }
+    u64 bpos = sub[l1];
     u64 wpos =  bpos / 64; // position of word in bitarray
     u64 nfound = l0*SELECT1D_L0+l1*SELECT1D_L1+1; // number of 1's found so far, up to chunk.idx
     i++;
