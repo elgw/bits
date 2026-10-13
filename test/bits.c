@@ -701,8 +701,7 @@ select1_raw(const u64 * BA,
         n -= (u64) __builtin_popcountl(BA[i++]);
     }
 
-
-    return i*64 + (u64) __builtin_ctzl(_pdep_u64(1LU << (n-1), BA[i]));
+    return i*64 + (u64)  __builtin_ctzl(_pdep_u64(1LU << (n-1), BA[i]));
 }
 
 void run_benchmark_linear_select1(void){

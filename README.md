@@ -182,44 +182,53 @@ For reference, this is how long time it takes to scan for a bit set at
 increasing distance from the beginning of an array, using
 `select1_raw` in `bits.c`.
 
-The extremely poor performance is due to `_pdep` being extremely slow on Ryzen 3700X. Even software implementations are faster! [llvm is aware](https://github.com/llvm/llvm-project/pull/217304).
+Turns out that `_pdep` being extremely slow on Ryzen 3700X, which is
+very unfortunate for bit manipulations and
+[chess](https://talkchess.com/viewtopic.php?t=72538). Even software
+implementations are faster! [llvm is
+aware](https://github.com/llvm/llvm-project/pull/217304). Intel 6700k
+is not stellar either, but at least faster while being four years
+older. Seems reasonable that a quickselect-like algorithm would do a
+reasonable job but I've not investigated this any further.
 
 `./bits --benchmark 7`
 
-
-|  bit set | T_select1_raw |
-|---------:|--------------:|
-|        1 |            72 |
-|        2 |            72 |
-|        4 |            72 |
-|        8 |            72 |
-|       16 |            72 |
-|       32 |            72 |
-|       64 |           108 |
-|      128 |           108 |
-|      256 |           144 |
-|      512 |           216 |
-|     1024 |           108 |
-|     2048 |           144 |
-|     4096 |           180 |
-|     8192 |           288 |
-|    16384 |           360 |
-|    32768 |           612 |
-|    65536 |          1116 |
-|   131072 |          5760 |
-|   262144 |         12240 |
-|   524288 |         26712 |
-|  1048576 |         55944 |
-|  2097152 |        113940 |
-|  4194304 |        257796 |
-|  8388608 |        462096 |
-| 16777216 |        926352 |
-| 33554432 |       1850004 |
-| 67108864 |       3720024 |
+|    query | Intel 6700k | AMD 3700X |
+|---------:|------------:|----------:|
+|        1 |         100 |      1296 |
+|        2 |          79 |       360 |
+|        4 |          52 |       360 |
+|        8 |          50 |       324 |
+|       16 |          50 |       360 |
+|       32 |          51 |       360 |
+|       64 |          50 |       360 |
+|      128 |          78 |       360 |
+|      256 |         111 |       396 |
+|      512 |         103 |       396 |
+|     1024 |         161 |       540 |
+|     2048 |         135 |       504 |
+|     4096 |         207 |       504 |
+|     8192 |         282 |       612 |
+|    16384 |         523 |       756 |
+|    32768 |        1151 |      1548 |
+|    65536 |        2304 |      2736 |
+|   131072 |        7324 |      7704 |
+|   262144 |        9686 |      9216 |
+|   524288 |       18738 |     21492 |
+|  1048576 |       36313 |     36540 |
+|  2097152 |       81930 |     73692 |
+|  4194304 |      189146 |    163692 |
+|  8388608 |      314762 |    315900 |
+| 16777216 |      620594 |    485316 |
+| 33554432 |     1256977 |    934164 |
+| 67108864 |     2669054 |   1856952 |
 
 </details>
 
 <details><summary>Timings</summary>
+
+Please see the note on linear scanning above. Performance clouded by
+slow pded on my machine.
 
 ``` nushell
 $ make OPT=1 -B
