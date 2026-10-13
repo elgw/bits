@@ -68,6 +68,17 @@ select1 * select1_new(bitarray * B)
 
 static u64
 select1_raw(const u64 * BA,
+            u64 n)
+{
+    u64 i = 0;
+    while(n > (u64) __builtin_popcountl(BA[i])){
+        n -= (u64) __builtin_popcountl(BA[i++]);
+    }
+    return i*64 +  (u64) __builtin_ctzl(_pdep_u64(1LU << (n-1), BA[i]));
+}
+#if 0
+static u64
+select1_rawx(const u64 * BA,
             __attribute__((unused)) const u64 n_BA, // number of u64s to scan
             const u64 n) // number of the '1' to find
 {
@@ -100,6 +111,7 @@ select1_raw(const u64 * BA,
     return 0;
 #endif
 }
+#endif
 
 u64 select1_get(const select1 * S, u64 i)
 {
@@ -117,7 +129,6 @@ u64 select1_get(const select1 * S, u64 i)
 
     u64 n_below = SELECT1_L0*l0 - chunk.delta_count[0];
     return chunk.i_word*64LU + select1_raw(S->bits + chunk.i_word,
-                                           0, //S->B->n_bits/64 + 1 - chunk.i_word,
                                            i - n_below);
 }
 

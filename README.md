@@ -176,6 +176,49 @@ trigger two cache misses.
   **non-decreasing** sequences, $`[s_0 \geq 0, s_1 \geq s_0, ..., s_k
   <n]`$ via a 1-1 mapping $`x\rightarrow x+1`$ in $`(k+n)\frac{17}{16}`$ bits.
 
+<details><summary>Linear scanning</summary>
+
+For reference, this is how long time it takes to scan for a bit set at
+increasing distance from the beginning of an array, using
+`select1_raw` in `bits.c`.
+
+The extremely poor performance is due to `_pdep` being extremely slow on Ryzen 3700X. Even software implementations are faster! [llvm is aware](https://github.com/llvm/llvm-project/pull/217304).
+
+`./bits --benchmark 7`
+
+
+|  bit set | T_select1_raw |
+|---------:|--------------:|
+|        1 |            72 |
+|        2 |            72 |
+|        4 |            72 |
+|        8 |            72 |
+|       16 |            72 |
+|       32 |            72 |
+|       64 |           108 |
+|      128 |           108 |
+|      256 |           144 |
+|      512 |           216 |
+|     1024 |           108 |
+|     2048 |           144 |
+|     4096 |           180 |
+|     8192 |           288 |
+|    16384 |           360 |
+|    32768 |           612 |
+|    65536 |          1116 |
+|   131072 |          5760 |
+|   262144 |         12240 |
+|   524288 |         26712 |
+|  1048576 |         55944 |
+|  2097152 |        113940 |
+|  4194304 |        257796 |
+|  8388608 |        462096 |
+| 16777216 |        926352 |
+| 33554432 |       1850004 |
+| 67108864 |       3720024 |
+
+</details>
+
 <details><summary>Timings</summary>
 
 ``` nushell

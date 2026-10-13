@@ -692,7 +692,41 @@ static void run_benchmark_elias_codes(){
     return;
 }
 
+static u64
+select1_raw(const u64 * BA,
+            u64 n)
+{
+    u64 i = 0;
+    while(n > (u64) __builtin_popcountl(BA[i])){
+        n -= (u64) __builtin_popcountl(BA[i++]);
+    }
 
+
+    return i*64 + (u64) __builtin_ctzl(_pdep_u64(1LU << (n-1), BA[i]));
+}
+
+void run_benchmark_linear_select1(void){
+    u64 n = 100000000;
+    bitarray * B = bitarray_new(n);
+    bitarray_reset1(B); // set all to 1
+    u32 cpuid;
+    u64 t0, t1;
+    u64 dummy = 0;
+    printf("| bit set | T_select1_raw |\n");
+    printf("| --:             | --:         |\n");
+    for(u64 pos = 1; pos < n; pos*=2){
+        t0 = __rdtscp(&cpuid);
+        u64 spos = select1_raw(B->data, pos);
+        t1 = __rdtscp(&cpuid);
+        assert(spos+1 == pos);
+        //printf("ref:%lu ans:%lu\n", pos, spos);
+        printf("| %lu  | %lu |\n", pos, t1 - t0);
+        dummy += spos;
+    }
+    printf("%lu\r              \n", dummy);
+    bitarray_free(B);
+    return;
+}
 
 typedef void (*unit_test)(int);
 typedef void (*benchmark)(void);
@@ -709,6 +743,7 @@ int main(int argc, char ** argv)
         run_benchmark_varray_vs_array,
         run_benchmark_bitarray_vs_u8,
         run_benchmark_elias_codes,
+        run_benchmark_linear_select1,
         NULL
     };
 
