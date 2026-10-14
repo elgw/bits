@@ -7,6 +7,8 @@
 #include <signal.h>
 
 #include "elias_codes.h"
+#include "util.h"
+
 #define EGAMMA_MAX 0x00000000ffffffffLU
 #define EDELTA_MAX 0x001fffffffffffffLU
 typedef uint64_t u64;
@@ -18,27 +20,6 @@ typedef int64_t i64;
 static u64 BB(u64 x){
     return 64 - (u64) __builtin_clzl(x);
 }
-
-
-static void print_binary(u64 x, u64 _nb){
-    int nb = (int) _nb;
-    while(nb > 0)
-    {
-        if(nb == 32){
-            printf(" ");
-        }
-        printf("%ld", x % 2);
-        x/=2;
-        nb--;
-    }
-}
-
-static void print_binaryl(const char * s, u64 x){
-    printf("%s: ", s);
-    print_binary(x, 64);
-    printf("\n");
-}
-
 
 u64 egamma_bits(u64 n){
     //raise(SIGSEGV);

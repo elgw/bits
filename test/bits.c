@@ -30,6 +30,52 @@
 #include "elias_codes.h"
 #include "bitpos.h"
 
+typedef void (*ut_fun)(int);
+typedef struct {
+    ut_fun fun;
+    const char * name;
+} unit_test;
+    typedef void (*benchmark_fn)(void);
+typedef struct {
+    benchmark_fn fun;
+    const char * name;
+} benchmark;
+
+// forward declarations
+static void run_benchmark_rank1_vs_lut(void);
+static void run_benchmark_select1_vs_lut(void);
+static void run_benchmark_cindex_vs_lut(void);
+static void run_benchmark_varray_vs_array(void);
+static void run_benchmark_bitarray_vs_u8(void);
+static void run_benchmark_elias_codes(void);
+static void run_benchmark_linear_select1(void);
+
+benchmark benchmarks[] = {
+    {run_benchmark_rank1_vs_lut, "rank1"},
+    {run_benchmark_select1_vs_lut, "select1"},
+    {run_benchmark_cindex_vs_lut, "cindex"},
+    {run_benchmark_varray_vs_array, "varray"},
+    {run_benchmark_bitarray_vs_u8, "bitarray"},
+    {run_benchmark_elias_codes, "Elias codes"},
+    {run_benchmark_linear_select1, "Linear select1"},
+    {NULL, NULL}
+};
+
+unit_test unit_tests[] = {
+    {bitarray_ut, "bitarray"},
+    {varray_ut, "varray"},
+    {elias_codes_ut, "Elias Codes, gamma and delta"},
+    {rank1_ut, "rank1"},
+    {select1_ut, "select1"},
+    {select1c_ut, "select1c"},
+    {select1d_ut, "select1d"},
+    {cindex_ut, "cindex (Compact index, i.e. Elias Fano)"},
+    {NULL, NULL}
+};
+
+u64 n_bm = 0;
+u64 n_ut = 0;
+
 // pin the program to a specific cpu. 0-based id
 static void pin_to_cpu(size_t cpu_id){
     cpu_set_t * set = CPU_ALLOC(cpu_id+1);
@@ -495,15 +541,17 @@ static void
 usage(void){
     printf("Usage: bits [ARGS]\n\n");
     printf("Possible arguments:\n");
+    printf("--test n\n");
+    printf("\tWhere n can be\n");
+    for(u64 kk = 0; kk < n_ut; kk++){
+        printf("\t%lu %s\n", kk+1, unit_tests[kk].name);
+    }
+    printf("--benchmark n\n");
+    printf("\tWhere n can be\n");
+    for(u64 kk = 0; kk < n_bm; kk++){
+        printf("\t%lu %s\n", kk+1, benchmarks[kk].name);
+    }
     printf("--verbose v\n\tSet verbosity level to v\n");
-    printf("--benchmark n\n\t"
-           "n=1 benchmark rank1\n\t"
-           "n=2 benchmark select1\n\t"
-           "n=3 benchmark cindex\n\t"
-           "n=4 benchmark varray\n\t"
-           "n=5 benchmark bitarray\n\t"
-           "n=6 benchmark Elias codes\n");
-
     printf("--help\n\tShow this help message\n");
     printf("--dummy\n\tUsed for some quick dev tests\n");
     printf("\n");
@@ -773,51 +821,26 @@ void run_benchmark_linear_select1(void){
     return;
 }
 
-typedef void (*unit_test)(int);
-typedef void (*benchmark)(void);
+
 
 int main(int argc, char ** argv)
 {
     pin_to_cpu(0);
     setlocale(LC_NUMERIC, "");
 
-    benchmark benchmarks[] = {
-        run_benchmark_rank1_vs_lut,
-        run_benchmark_select1_vs_lut,
-        run_benchmark_cindex_vs_lut,
-        run_benchmark_varray_vs_array,
-        run_benchmark_bitarray_vs_u8,
-        run_benchmark_elias_codes,
-        run_benchmark_linear_select1,
-        NULL
-    };
-
-    unit_test unit_tests[] = {
-        bitarray_ut,
-        varray_ut,
-        elias_codes_ut,
-        rank1_ut,
-        select1_ut,
-        select1_ut,
-        select1c_ut,
-        select1d_ut,
-        cindex_ut,
-        NULL,
-    };
-
-    u64 n_bm = 0;
-    while(benchmarks[n_bm] != NULL){n_bm++;};
-
-    u64 n_ut = 0;
-    while(unit_tests[n_ut] != NULL){n_ut++;};
+    while(unit_tests[n_ut].fun != NULL){n_ut++;};
+    while(benchmarks[n_bm].fun != NULL){n_bm++;};
 
     config * conf = config_new(argc, argv);
     if(conf->benchmark > 0){
         if(conf->benchmark > n_bm){
             printf("There are only %lu benchmarks\n", n_bm);
+            for(u64 kk = 0; kk < n_bm; kk++){
+                printf("%lu %s\n", kk+1, benchmarks[kk].name);
+            }
             exit(EXIT_FAILURE);
         }
-        benchmarks[conf->benchmark-1]();
+        benchmarks[conf->benchmark-1].fun();
         free(conf);
         return EXIT_SUCCESS;
     }
@@ -830,15 +853,18 @@ int main(int argc, char ** argv)
     if(conf->test == 0){
         for(u64 kk = 0; kk < n_ut; kk++){
             printf("%lu/%lu\n", kk+1, n_ut);
-            unit_tests[kk](conf->verbose);
+            unit_tests[kk].fun(conf->verbose);
         }
         printf("All tests passed successfully. Tests not tested :)\n");
     } else {
         if(conf->test > n_ut){
             printf("There are only %lu unit tests\n", n_ut);
+            for(u64 kk = 0; kk < n_ut; kk++){
+                printf("%lu %s\n", kk+1, unit_tests[kk].name);
+            }
             exit(EXIT_FAILURE);
         }
-        unit_tests[conf->test-1](conf->verbose);
+        unit_tests[conf->test-1].fun(conf->verbose);
     }
 
     config_free(conf);

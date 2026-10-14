@@ -38,7 +38,9 @@ select1_ut.o \
 select1c.o \
 select1c_ut.o \
 select1d.o \
-select1d_ut.o
+select1d_ut.o \
+util.o
+
 
 SRCDIR=src/
 
