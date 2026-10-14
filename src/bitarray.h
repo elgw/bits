@@ -1,4 +1,6 @@
 #pragma once
+// A bitarray/bitvector which supports
+// reading and setting individual bits
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -14,15 +16,13 @@ typedef uint8_t u8;
 typedef int32_t i32;
 typedef int64_t i64;
 
-
 typedef struct {
     u64 * data;
     u64 n_bits;
     u64 mem_allocated;
 } bitarray;
 
-// A bit array or bitvector which supports
-// reading and setting individual bits
+// For n bits
 bitarray * bitarray_new(u64 n);
 void bitarray_free(bitarray * B);
 
@@ -31,6 +31,8 @@ u8 bitarray_get(const bitarray * B, const u64 n);
 
 // set a specific bit
 void bitarray_set(bitarray * B, const u64 n, const u8 value);
+void bitarray_set1(bitarray * B, const u64 n);
+void bitarray_set0(bitarray * B, const u64 n);
 
 // number of 1s up to n
 // O(n) time but with no memory overhead.
@@ -46,9 +48,7 @@ void bitarray_reset(bitarray * );
 // set all bits to 1
 void bitarray_reset1(bitarray * );
 
-// probably better to define as static where needed
-int pos_first_one(const u64 w);
-
+// sum of 1's in the array in O(n)
 u64 bitarray_sum_ones(const bitarray *);
 
 void bitarray_print(const bitarray * B);

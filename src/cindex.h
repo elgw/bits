@@ -14,7 +14,8 @@ typedef struct{
     bitarray * upper;
     select1c * S1;
     varray * lower;
-    u64 lower_bits;
+    u64 bits_upper;
+    u64 bits_lower;
     u64 mem_allocated;
 } cindex;
 

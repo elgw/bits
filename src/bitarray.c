@@ -30,7 +30,9 @@ bitarray * bitarray_new(u64 n)
 
 void bitarray_free(bitarray * B)
 {
-    assert(B != NULL);
+    if(B == NULL){
+        return;
+    }
     free(B->data);
     free(B);
     return;
@@ -49,24 +51,31 @@ u8 bitarray_get(const bitarray * B, const u64 n)
     return (B->data[aidx] & (1LU << sh)) > 0;
 }
 
-void bitarray_set(bitarray * B, const u64 n, const u8 value)
-{
-#ifndef NDEBUG
-    if(n >= B->n_bits){
-        printf("bitarray_set: trying to set bit %lu but the last possible is %lu\n",
-               n, B->n_bits-1);
-    }
+
+void bitarray_set1(bitarray * B, const u64 n){
     assert(n < B->n_bits);
-#endif
     u64 aidx = n / 64;
     u64 sh = n - aidx*64;
+    B->data[aidx] |= (1LU << sh);
+}
 
+void bitarray_set0(bitarray * B, const u64 n){
+    assert(n < B->n_bits);
+    u64 aidx = n / 64;
+    u64 sh = n - aidx*64;
+    B->data[aidx] |= (1LU << sh);
+    B->data[aidx] &= ~(1LU << sh);
+}
+
+void bitarray_set(bitarray * B, const u64 n, const u8 value)
+{
     if(value == 1){
-        B->data[aidx] |= (1LU << sh);
+        bitarray_set1(B, n);
     } else {
-        B->data[aidx] &= ~(1LU << sh);
+        bitarray_set0(B, n);
     }
 }
+
 
 u64 bitarray_rank1(const bitarray * B, const u64 n)
 {
@@ -117,35 +126,18 @@ static u64 select1_raw(const u64 * BA, const u64 n_BA,
     return 0;
 }
 
-u64 bitarray_select1(const bitarray * B, const u64 n)
-{
-    //if(n == 0){
-    //    raise(SIGSEGV);
-    //    exit(EXIT_FAILURE);
-    //}
+u64 bitarray_select1(const bitarray * B, const u64 n){
     assert( (n > 0) && "bitarray_select1 uses 1-indexing");
     return select1_raw(B->data, B->n_bits, n);
 }
 
-void bitarray_reset(bitarray * B)
-{
+void bitarray_reset(bitarray * B){
     memset(B->data, 0, B->n_bits/8);
 }
 
-void bitarray_reset1(bitarray * B)
-{
+void bitarray_reset1(bitarray * B){
     memset(B->data, 0xffff, B->n_bits/8);
 }
-
-int pos_first_one(const u64 w){
-    // TODO: Need to pair with popcount or check for 0?
-    // 0->64
-    // 1->63
-    // ...
-    // 134217728 -> 36
-    return __builtin_ctzl(w) + 1;
-}
-
 
 u64 bitarray_sum_ones(const bitarray * B){
     u64 n_ones = 0;
