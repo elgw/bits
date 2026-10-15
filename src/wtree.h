@@ -16,11 +16,19 @@ typedef struct {
 
 
 // A new wavelet tree for n_char characters of char_bits bits each
+// TODO: n_char has to be a multiple of 256 ...
+// The input data consists of n_char values encoded by two bits each
 wtree2 * wtree2_new(u64 * data, u64 n_char);
 
-u64 wtree2_rank1(const wtree2 *, u64 n);
-u64 wtree2_select1(const wtree2 *, u64 n);
+// Retrieve the value of the nth element, i.e. returns a value in [0 .. 3]
 u64 wtree2_access(const wtree2 *, u64 n);
+
+// Return the number of c up to and including position n
+// i.e. wtree2_rank2(W, 2, 0) will say 1 if the first "character" is 2
+u64 wtree2_rankc(const wtree2 *, u64 c, u64 n);
+
+u64 wtree2_selectc(const wtree2 *, u64 c, u64 n);
+
 u64 wtree2_range_query(const wtree2 *, u64 i, u64 j, u64 l, u64 r);
 
 void wtree2_free(wtree2 * );

@@ -97,3 +97,14 @@ u64 wtree2_access(const wtree2 * W, u64 n)
         return 2 + bitarray_get(W->B, rpos);
     }
 }
+
+
+u64 wtree2_rankc(const wtree2 *, u64 c, u64 n){
+    assert(0);
+    return 0;
+}
+
+u64 wtree2_selectc(const wtree2 *, u64 c, u64 n){
+    assert(0);
+    return 0;
+}
