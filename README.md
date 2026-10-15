@@ -363,7 +363,7 @@ For alphabet sizes of 4 (with ACGT in mind).
 - selectC -- todo
 - rankC -- todo
 
-<details><summary>timings of access</summary></details>
+<details><summary>timings of access</summary>
 
 `make OPT=1 &&./bits --benchmark 8`
 
