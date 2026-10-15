@@ -99,8 +99,19 @@ u64 wtree2_access(const wtree2 * W, u64 n)
 }
 
 
-u64 wtree2_rankc(const wtree2 *, u64 c, u64 n){
+u64 wtree2_rankc(const wtree2 * W, u64 c, u64 n){
     assert(0);
+    // store some reference points so that we only need one rank operation per case
+    switch(c){
+    case 0:
+        return 0;
+    case 1:
+        return rank1_get(W->R1, W->n_char + n) - rank1_get(W->R1, n);
+    case 2:
+        return 0;
+    case 3:
+        return 0;
+    }
     return 0;
 }
 

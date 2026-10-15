@@ -33,12 +33,21 @@
 
 #include "bitpos.h"
 
+static double
+clockdiff(struct timespec* start, struct timespec * finish)
+{
+    double elapsed = ((double) finish->tv_sec - (double) start->tv_sec);
+    elapsed += ((double) finish->tv_nsec - (double) start->tv_nsec) / 1000000000.0;
+    return elapsed;
+}
+
+
 typedef void (*ut_fun)(int);
 typedef struct {
     ut_fun fun;
     const char * name;
 } unit_test;
-    typedef void (*benchmark_fn)(void);
+typedef void (*benchmark_fn)(void);
 typedef struct {
     benchmark_fn fun;
     const char * name;
@@ -52,6 +61,7 @@ static void run_benchmark_varray_vs_array(void);
 static void run_benchmark_bitarray_vs_u8(void);
 static void run_benchmark_elias_codes(void);
 static void run_benchmark_linear_select1(void);
+static void run_benchmark_wtree2_construct(void);
 
 benchmark benchmarks[] = {
     {run_benchmark_rank1_vs_lut, "rank1"},
@@ -61,6 +71,7 @@ benchmark benchmarks[] = {
     {run_benchmark_bitarray_vs_u8, "bitarray"},
     {run_benchmark_elias_codes, "Elias codes"},
     {run_benchmark_linear_select1, "Linear select1"},
+    {run_benchmark_wtree2_construct, "wtree2 construct"},
     {NULL, NULL}
 };
 
@@ -97,6 +108,88 @@ static void pin_to_cpu(size_t cpu_id){
     }
 }
 
+
+static void run_benchmark_wtree2_construct(void){
+    u64 n_nt = 2048;
+    printf("Time to access random elements\n");
+    printf("|    N | u8 array | wtree2 |\n");
+    printf("| -- : |      --: |    --: |\n");
+
+    while(n_nt < 4294967296)
+    {
+        if(0){
+            printf("wtree2_construct, n = %lu (%u M)\n", n_nt, n_nt / 1000000LU);
+        }
+        struct timespec t0, t1;
+        clock_gettime(CLOCK_REALTIME, &t0);
+        u64 * data = malloc(n_nt/32*sizeof(u64));
+        for(u64 kk = 0; kk < n_nt/32; kk++){
+            data[kk] = (u64) rand() + (((u64) rand()) << 32);
+        }
+        clock_gettime(CLOCK_REALTIME, &t1);
+        if(0){
+            printf("Construct random input: %.3f s\n", clockdiff(&t0, &t1));
+        }
+        clock_gettime(CLOCK_REALTIME, &t0);
+        wtree2 * W = wtree2_new(data, n_nt);
+        if(0){
+            printf("wtree memory usage: %lu byte\n", W->mem_allocated);
+            printf("Construct wtree2  %.3f s\n", clockdiff(&t0, &t1));
+        }
+        free(data);
+        clock_gettime(CLOCK_REALTIME, &t1);
+
+
+        u32 cpuid;
+        u64 c0, c1;
+        u64 t_wtree2 = 0;
+        u64 t_array8 = 0;
+        // Read random nucleotides
+
+        u64 res = 0;
+        u64 n_sample = 1000000;
+        srand(0);
+        for(u64 kk = 0; kk < n_sample; kk++)
+        {
+            u64 idx = (u64) rand() % n_nt;
+            c0 = __rdtscp(&cpuid);
+            res += wtree2_access(W, idx);
+            c1 = __rdtscp(&cpuid);
+            t_wtree2 += (c1-c0);
+        }
+
+        if(0){
+            printf("\rTo access random elements\n");
+            printf("wtree2: %.1f ticks in average\n", (double) t_wtree2 / (double) n_sample);
+        }
+
+        u8 * data8 = malloc(n_nt*sizeof(u8));
+        for(u64 kk = 0; kk < n_nt; kk++){
+            data8[kk] = (u8) (rand() % 4);
+        }
+        srand(0);
+        for(u64 kk = 0; kk < n_sample; kk++)
+        {
+            u64 idx = (u64) rand() % n_nt;
+            c0 = __rdtscp(&cpuid);
+            res += data8[idx];
+            c1 = __rdtscp(&cpuid);
+            t_array8 += (c1-c0);
+        }
+        if(0){
+
+            printf("\r8-array: %.1f ticks in average\n", (double) t_array8 / (double) n_sample);
+        }
+        free(data8);
+        wtree2_free(W);
+        n_nt *= 2;
+        printf("%lu", res);
+        printf("\r| %lu | %.1f | %.1f |\n", n_nt,
+               (double) t_array8 / (double) n_sample,
+               (double) t_wtree2 / (double) n_sample);
+    }
+    return;
+}
 static void benchmark_bitarray(const u64 n)
 {
     u8 * A = calloc(n, sizeof(u8));
