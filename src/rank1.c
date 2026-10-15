@@ -20,8 +20,10 @@ rank1 * rank1_init(u64 * bits, u64 nbit)
     u64 nbin = (nbit) / 512 + 1;
     assert(nbin*512 >= nbit);
     rank1 * r1 = calloc(1, sizeof(rank1));
+    r1->mem_allocated += sizeof(rank1);
     r1->nbit = nbit;
     r1->bin = malloc(nbin*sizeof(rank1_bin));
+    r1->mem_allocated += nbin*sizeof(rank1_bin);
     r1->bits = bits;
 
     u64 count = 0; // value of first bit
@@ -51,6 +53,7 @@ rank1 * rank1_init(u64 * bits, u64 nbit)
     // but adding a little more memory is probably preferential compared to
     // having an extra conditional every time ...
     r1->n_one = rank1_get(r1, r1->nbit-2);
+
     return r1;
 }
 

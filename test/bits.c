@@ -28,6 +28,9 @@
 #include "select1d.h"
 #include "select1d_ut.h"
 #include "elias_codes.h"
+#include "wtree.h"
+#include "wtree_ut.h"
+
 #include "bitpos.h"
 
 typedef void (*ut_fun)(int);
@@ -70,6 +73,7 @@ unit_test unit_tests[] = {
     {select1c_ut, "select1c"},
     {select1d_ut, "select1d"},
     {cindex_ut, "cindex (Compact index, i.e. Elias Fano)"},
+    {wtree_ut, "wtree"},
     {NULL, NULL}
 };
 

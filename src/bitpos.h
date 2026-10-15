@@ -41,6 +41,7 @@ static uint64_t bitpos(const uint64_t w, uint64_t i)
     return pos;
 }
 #else
+#include <x86intrin.h>
 static uint64_t bitpos(const uint64_t w, uint64_t i)
 {
     return __builtin_ctzl(_pdep_u64(1LU << (i-1), w));

@@ -28,6 +28,18 @@ bitarray * bitarray_new(u64 n)
     return B;
 }
 
+bitarray * bitarray_new_from_data(u64 * data, u64 nbit)
+{
+    bitarray * B = malloc(sizeof(bitarray));
+    if(B == NULL){
+        return NULL;
+    }
+    B->data = data;
+    B->n_bits = nbit;
+    B->mem_allocated = sizeof(bitarray) + ((nbit+63)/64)*64;
+    return B;
+}
+
 void bitarray_free(bitarray * B)
 {
     if(B == NULL){

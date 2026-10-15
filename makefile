@@ -39,6 +39,8 @@ select1c.o \
 select1c_ut.o \
 select1d.o \
 select1d_ut.o \
+wtree.o \
+wtree_ut.o \
 util.o
 
 

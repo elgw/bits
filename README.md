@@ -382,6 +382,8 @@ Counter](https://en.wikipedia.org/wiki/Time_Stamp_Counter) via the
   GCC](https://gcc.gnu.org/onlinedocs/gcc/Bit-Operation-Builtins.html)
   as well as your local copy of `x86intrin.h`
 
+- Intel documentation about [PEXT](https://intel.github.io/SDM/instruction/PEXT.html)
+
 [^3]: [The Elias–Fano coding method by Giulio Ermanno
 Pibiri](https://jermp.github.io/assets/pdf/notes/elias_fano_notes.pdf)
 

@@ -25,6 +25,7 @@ typedef struct {
     u64 * bits; // owned by the caller and not freed after use
     u64 nbit;
     u64 n_one; // Number of 1's
+    u64 mem_allocated;
 } rank1;
 
 // nbit needs to be a multiple of 64*8 = 512

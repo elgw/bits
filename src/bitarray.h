@@ -24,6 +24,9 @@ typedef struct {
 
 // For n bits
 bitarray * bitarray_new(u64 n);
+// note: bitarray takes ownership of data
+bitarray * bitarray_new_from_data(u64 * data, u64 n);
+
 void bitarray_free(bitarray * B);
 
 // Get a specific bit
