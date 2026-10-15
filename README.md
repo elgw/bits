@@ -403,18 +403,19 @@ Here compared to an array of u8`s to at least show something good
 
 ## Notes/links
 
-- Things are designed to work with u64 but could of course be more
-  memory efficient if u32 is the design case ... simpler to do in a
-  language with templates or comptime abilities.
+- Most methods are designed to work with u64 but could of course be
+  more memory efficient if u32 is the design case ... simpler to do in
+  a language with templates or comptime abilities.
 
 - Timings typically depends on the density of 1's as well as the
-  access pattern. Small test sizes gives the overhead of the bit
-  manipulations while the large sizes reveals cache misses.
+  access pattern. Small test sizes typically reveal the bit
+  manipulation overhead while larger test sizes reveal the cache
+  structure of the test machine.
 
 - Benchmarks are not consistently run on the same machine.
 
-- Where the benchmarks compare to arrays, those are represented by
-  `u64` words..
+- Where the benchmarks compare to arrays, those are typically represented by
+  `u64` words unless something else is stated.
 
 - Timings are done by reading the [Time Stamp
 Counter](https://en.wikipedia.org/wiki/Time_Stamp_Counter) via the
