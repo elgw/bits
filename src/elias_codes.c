@@ -308,7 +308,7 @@ void elias_codes_ut(int verbose){
         u64 G = egamma_encode(kk);
         u64 iG = egamma_decode(G);
         if(verbose > 1){
-            if(kk == 5 | kk == 77){
+            if((kk == 5) || (kk == 77)){
                 printf(" %lu ->  ", kk);
                 print_binary(G, egamma_bits(kk));
                 printf(" -> %lu\n", iG);
@@ -323,7 +323,7 @@ void elias_codes_ut(int verbose){
         u64 D = edelta_encode(kk);
         u64 iD = edelta_decode(D);
         if(verbose > 1){
-            if(kk == 5 | kk == 77 | (kk != iD)){
+            if( (kk == 5) || (kk == 77) || (kk != iD)){
                 printf(" %lu ->  ", kk);
                 print_binary(D, edelta_bits(kk));
                 printf(" -> %lu\n", iD);

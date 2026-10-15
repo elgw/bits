@@ -54,7 +54,9 @@ u8 bitarray_get(const bitarray * B, const u64 n)
 {
     #ifndef NDEBUG
     if(n >= B->n_bits) {
+        printf("Error %s:%d\n", __FILE__, __LINE__);
         printf("Asking for bit %lu, but there are only %lu available\n", n+1, B->n_bits);
+
         raise(SIGSEGV);
     }
     #endif

@@ -22,11 +22,13 @@ select1c * select1c_new(bitarray * B)
     if(S == NULL){
         return NULL;
     }
+    S->mem_allocated += sizeof(select1c);
 
     // Need to know the number of 1s for pre-allocation
     S->n_ones = bitarray_sum_ones(B);
-    assert(S->n_ones > 0);
-    S->mem_allocated += sizeof(select1c);
+    if(S->n_ones == 0){
+        return S;
+    }
     S->bits = B->data; // borrowed, owned by B and not freed
 
     u64 n_level = (S->n_ones + SELECT1C_L0 -1) / SELECT1C_L0;
