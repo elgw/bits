@@ -68,6 +68,11 @@ void rank1_ut(int verbose){
         assert(rank1_get(r1, kk) ==  R1[kk]);
     }
 
+    for(int kk = 0; kk < 100; kk++){
+        u64 pos = (u64) rand() % r1->nbit;
+        assert( (rank1_get(r1, pos) + rank0_get(r1, pos)) == pos+1);
+    }
+
     rank1_free(r1);
     bitarray_free(B);
     free(A);

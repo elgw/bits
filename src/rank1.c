@@ -91,6 +91,10 @@ u64 rank1_get(const rank1 * r1, u64 b)
     return l0+l1+l2;
 }
 
+u64 rank0_get(const rank1 * r1, u64 b){
+    return (1+b) - rank1_get(r1, b);
+}
+
 void rank1_free(rank1 * r1){
     free(r1->bin);
     free(r1);

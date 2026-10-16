@@ -58,15 +58,10 @@ select1c * select1c_new(bitarray * B)
 
 u64 select1c_get(const select1c * S, u64 i)
 {
-#ifndef NDEBUG
+
     if(i >= S->n_ones){
-        printf("Asking for the %lu:th 1 but there are only %lu ones\n",
-               i+1, S->n_ones);
-        printf("%s:L%d\n", __FILE__, __LINE__);
-        raise(SIGSEGV);
+        return -1LU;
     }
-    assert(i < S->n_ones);
-#endif
 
     u64 l0 = i/SELECT1C_L0; // bin index
     select1c_64 chunk = S->L8[l0]; // bin

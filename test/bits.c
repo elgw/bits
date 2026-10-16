@@ -118,7 +118,7 @@ static void run_benchmark_wtree2_construct(void){
     while(n_nt < 4294967296)
     {
         if(0){
-            printf("wtree2_construct, n = %lu (%u M)\n", n_nt, n_nt / 1000000LU);
+            printf("wtree2_construct, n = %lu (%lu M)\n", n_nt, n_nt / 1000000LU);
         }
         struct timespec t0, t1;
         clock_gettime(CLOCK_REALTIME, &t0);
@@ -952,7 +952,7 @@ int main(int argc, char ** argv)
             printf("%lu/%lu\n", kk+1, n_ut);
             unit_tests[kk].fun(conf->verbose);
         }
-        printf("All tests passed successfully. Tests not tested :)\n");
+        printf("All tests passed successfully, however, the tests are not tested.\n");
     } else {
         if(conf->test > n_ut){
             printf("There are only %lu unit tests\n", n_ut);

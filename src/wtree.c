@@ -100,22 +100,55 @@ u64 wtree2_access(const wtree2 * W, u64 n)
 
 
 u64 wtree2_rankc(const wtree2 * W, u64 c, u64 n){
-    assert(0);
-    // store some reference points so that we only need one rank operation per case
+    // TODO: store these reference points so that we only need two rank operation per case
+    // rank1_get(W->R1, W->n_char - 1)
+    // rank1_get(W->R1, W->rstart -1 )
+    u64 base; //
     switch(c){
-    case 0:
-        return 0;
-    case 1:
-        return rank1_get(W->R1, W->n_char + n) - rank1_get(W->R1, n);
-    case 2:
-        return 0;
-    case 3:
-        return 0;
+    case 0: // A
+        base = (n+1 - rank1_get(W->R1, n)); // 00 or 01
+        return  base - (rank1_get(W->R1, W->n_char + base -1) - rank1_get(W->R1, W->n_char - 1));
+    case 1: // C
+        base = (n+1 - rank1_get(W->R1, n)); // 00 or 01
+        return rank1_get(W->R1, W->n_char + base -1) - rank1_get(W->R1, W->n_char -1 );
+    case 2: // G
+        base = rank1_get(W->R1, n); // 10 or 11
+        return base - (rank1_get(W->R1, W->rstart + base -1) - rank1_get(W->R1, W->rstart -1 ));
+    case 3: // T
+        base = rank1_get(W->R1, n); // 10 or 11
+        return rank1_get(W->R1, W->rstart + base - 1) - rank1_get(W->R1, W->rstart -1);
     }
     return 0;
 }
 
-u64 wtree2_selectc(const wtree2 *, u64 c, u64 n){
+u64 wtree2_selectc(const wtree2 * W, u64 c, u64 k){
+    // Start from the bottom. Determine position in the leafs
+    // and then transfer that to the root
+    // TODO: the missing cases requires select0
+    assert(k > 0); // 1-based just like our select1
+    u64 base;
+    u64 cpos;
+    switch(c){
+    case 0: // A
+        return 0;
+    case 1: // C
+        assert(0);
+        return 0;
+    case 2: // G
+        assert(0);
+        return 0;
+    case 3: // T
+        base = rank1_get(W->R1,
+                         W->rstart - 1); // number of 1s up to W->rstart
+        cpos = select1c_get(W->S1,
+                            base + k - 1); // location of the nth 1 in right
+        if(cpos > 2*W->n_char){ // out of bounds
+            return -1LU;
+        }
+        return select1c_get(W->S1,
+                            cpos - W->rstart);
+    }
+    return 0;
     assert(0);
     return 0;
 }

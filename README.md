@@ -5,7 +5,8 @@ structures.
 Implemented for fun and learning (while reading [^4]). Neither elegant
 nor the fastest in the world, and with approximately one bug per
 line. If you need these things, check out something more mature like
-[sux-rs](https://github.com/vigna/sux-rs).
+[vigna/sux-rs](https://github.com/vigna/sux-rs),
+[pasta-toolbox/bit_vector](https://github.com/pasta-toolbox/bit_vector)
 
 
 ## Building
@@ -129,7 +130,7 @@ bits extra memory.
 - rank1, in $`\mathcal{O}(n)`$.
 - select1_bs, in $`\mathcal{O}(\log n)`$ time.
 using binary search.
-
+- Also rank0 using the same data structure.
 - Inspired by Sebastiano Signa's rank9 [^1]
 
 <details><summary>Timings</summary>
@@ -175,6 +176,8 @@ trigger two cache misses.
   s_1>s_0, ..., s_k <n]`$ in $`n\frac{17}{16}`$ bits, or even
   **non-decreasing** sequences, $`[s_0 \geq 0, s_1 \geq s_0, ..., s_k
   <n]`$ via a 1-1 mapping $`x\rightarrow x+1`$ in $`(k+n)\frac{17}{16}`$ bits.
+
+- **select0** would require a separate data structure.
 
 <details><summary>Linear scanning</summary>
 
@@ -432,6 +435,12 @@ Counter](https://en.wikipedia.org/wiki/Time_Stamp_Counter) via the
   as well as your local copy of `x86intrin.h`
 
 - Intel documentation about [PEXT](https://intel.github.io/SDM/instruction/PEXT.html)
+
+- [two-stack-sliding-window-aggregation](https://orlp.net/blog/two-stack-sliding-window-aggregation/), and,
+Low-Latency Sliding-Window Aggregation in Worst-Case Constant Time,
+  K. Tangwongsan, M. Hirzel, S. Schneider
+  [https://doi.org/10.1145/3093742.3093925]
+
 
 [^3]: [The Elias–Fano coding method by Giulio Ermanno
 Pibiri](https://jermp.github.io/assets/pdf/notes/elias_fano_notes.pdf)

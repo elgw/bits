@@ -34,6 +34,8 @@ rank1 * rank1_init(u64 * bits, u64 nbit);
 // rank_1(r1, b)
 u64 rank1_get(const rank1 * r1, u64 b);
 
+u64 rank0_get(const rank1 * r1, u64 b);
+
 // select1 implemented by binary search
 // returns non-zero if b == 0 or b > r1->n_ones
 int rank1_select1_bs(const rank1 *, u64 b, u64 * select1);

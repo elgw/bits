@@ -2,22 +2,19 @@
 #include <stdio.h>
 
 #include "wtree.h"
+#include "bitarray.h"
 
 // Define some alphabet with 4 characters
-const char c0 = 'A';
-const char c1 = 'C';
-const char c2 = 'G';
-const char c3 = 'T';
-char b2c[4] = {c0, c1, c2, c3};
-static u64 c2b(char c){
+const char Sigma[4] = {'a', 'c', 'g', 'T'};
+static u64 iSigma(char c){
     switch(c){
-    case c0:
+    case Sigma[0]:
         return 0;
-    case c1:
+    case Sigma[1]:
         return 1;
-    case c2:
+    case Sigma[2]:
         return 2;
-    case c3:
+    case Sigma[3]:
         return 3;
     }
     assert(0);
@@ -33,9 +30,9 @@ u64 * nt_to_bin(char * seq, u64 nchar){
 
     for(u64 kk = 0; kk < nword; kk++){
         for(u64 ll = 0; ll < 32; ll++){
-            u64 c = c2b(seq[kk*32 + ll]);
+            u64 c = iSigma(seq[kk*32 + ll]);
             words[kk] |= (c << (2*ll));
-            //printf("ll=%lu c=%lu/%c:  0x%016lx\n", ll, c, b2c[c], words[kk]);
+            //printf("ll=%lu c=%lu/%c:  0x%016lx\n", ll, c, Sigma[c], words[kk]);
         }
     }
 
@@ -50,7 +47,7 @@ char * bin_to_nt(u64 * words, u64 n_word){
 
     for(u64 kk = 0; kk < n_word; kk++){
         for(u64 ll = 0; ll < 32; ll++){
-            seq[32*kk+ll] = b2c[(words[kk] >> (2*ll)) % 4];
+            seq[32*kk+ll] = Sigma[(words[kk] >> (2*ll)) % 4];
             assert(seq[32*kk+ll] <= 't');
         }
     }
@@ -62,10 +59,62 @@ char * randseq(u64 n){
     assert(n%32 == 0);
     char * S = malloc(n*sizeof(char));
     for(u64 kk = 0; kk < n; kk++){
-        S[kk] = b2c[rand() % 4];
+        S[kk] = Sigma[rand() % 4];
     }
     return S;
 }
+
+u64 rankc_w2(u64 c, u64 * data, u64 n){
+    u64 test = 1LU;
+    bitarray * B0 = bitarray_new_from_data(&test, 64);
+    assert(bitarray_get(B0, 0) == 1);
+    assert(bitarray_rank1(B0, 0) == 1);
+    B0->data = NULL;
+    bitarray_free(B0);
+
+    // count all characters up to and including n
+    bitarray * B = bitarray_new_from_data(data, 2+2*n);
+    u64 H[4] = {0};
+    for(u64 kk = 0; kk <= n; kk++){
+        u64 v = bitarray_get(B, 2*kk) + 2*bitarray_get(B, 2*kk+1);
+        H[v]++;
+    }
+    u64 sum = H[0] + H[1] + H[2] + H[3];
+    assert(sum == n + 1);
+
+    B->data = NULL;
+    bitarray_free(B);
+    return H[c];
+}
+
+u64 selectc_w2(u64 c, u64 * data, u64 n, u64 k){
+    u64 test = 1LU;
+    bitarray * B0 = bitarray_new_from_data(&test, 64);
+    assert(bitarray_get(B0, 0) == 1);
+    assert(bitarray_select1(B0, 1) == 0);
+    B0->data = NULL;
+    bitarray_free(B0);
+
+    assert(k > 0); // 1-indexing for some reason
+
+    // count all characters up to and including n
+    bitarray * B = bitarray_new_from_data(data, 2+2*n);
+    u64 H[4] = {0};
+    for(u64 kk = 0; kk < n; kk++){
+        u64 v = bitarray_get(B, 2*kk) + 2*bitarray_get(B, 2*kk+1);
+        H[v]++;
+        if(H[c] == k){
+            return kk;
+        }
+    }
+    #if 0
+    printf("Warning selectc_w2(%c, %lu), could not find withing bounds\n",
+           Sigma[c], k);
+    #endif
+    return n;
+}
+
+
 
 void wtree_ut(int verbose)
 {
@@ -100,21 +149,67 @@ void wtree_ut(int verbose)
     for(u64 kk = 0; kk < nchar; kk++){
         u64 v = wtree2_access(W, kk);
         assert(v < 4);
-        char c = b2c[v];
+        char c = Sigma[v];
         assert(c == seq[kk]);
     }
-    if(verbose > 0){
-        printf("wtree2_select1 (TODO)\n");
-    }
-
-    // create a reference implementation that linearly scans the nucleotide array
 
     if(verbose > 0){
-        printf("wtree2_rank1 (TODO)\n");
+        printf("wtree2_rankc\n");
+    }
+    if(verbose > 1){
+        for(i64 kk = 0; kk < 16; kk++){
+            printf("%c", seq[kk]);
+        }
+        printf("\n");
     }
 
-    // create a reference implementation that linearly scans the nucleotide array
+    u64 nwrong = 0;
+    for(u64 kk = 0; kk+1 < nchar; kk++){
+        for(u64 ch = 0; ch < 4; ch++){
+            u64 ref = rankc_w2(ch, words, kk);
+            if(0){
+                printf("rank_%c(%lu) = %lu\n", Sigma[ch], kk, ref);
+            }
+            u64 rc = wtree2_rankc(W, ch, kk);
+            if(rc != ref){
+                nwrong++;
+                printf("ch=%c,kk=%lu, REF: %lu GOT: %lu\n", Sigma[ch], kk, ref, rc);
+            }
+            if(nwrong > 8){
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
 
+    if(verbose > 0){
+        printf("wtree2_selectc (only for c = 3)\n");
+    }
+
+    if(verbose > 1){
+        for(i64 kk = 0; kk < 16; kk++){
+            printf("%c", seq[kk]);
+        }
+        printf("\n");
+    }
+
+    nwrong = 0;
+    for(u64 kk = 1; kk < nchar/4; kk++){
+        for(u64 ch = 3; ch < 4; ch++){
+            u64 ref = selectc_w2(ch, words, nchar, kk);
+            u64 rc = wtree2_selectc(W, ch, kk);
+            if(ref < nchar){
+                if(rc != ref){
+                    nwrong++;
+                    printf("ch=%c,kk=%lu, REF: %lu GOT: %lu\n", Sigma[ch], kk, ref, rc);
+                }
+            }
+            if(nwrong > 8){
+                exit(EXIT_FAILURE);
+            }
+        }
+    }
+
+    assert(nwrong == 0);
     free(seq);
     wtree2_free(W);
 
