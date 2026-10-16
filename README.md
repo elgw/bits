@@ -356,15 +356,14 @@ Elias delta array, encoding 1, ... 1000000
 
 </details>
 
-## Wavelet tree
+### **wtree2**
 
-For alphabet sizes of 4 (with ACGT in mind).
+Wavelet tree alphabet sizes of 4 (with ACGT in mind).
 
-- access, implemented but quite uninteresting since a 2-bit array will
-  always be faster (the wavelet tree spreads the data so there will be
-  two cache misses per access using an alphabet of four).
-- selectC -- todo
-- rankC -- todo
+- access
+- selectC
+- rankC, only the case not requiring select0 is implemented, i.e. for
+  c=`b11`
 
 <details><summary>timings of access</summary>
 
@@ -373,9 +372,9 @@ For alphabet sizes of 4 (with ACGT in mind).
 Time to access random elements in arrays of growing size. The results
 are dominated by memory latencies for large "genomes".
 
-Here compared to an array of u8`s to at least show something good
-  (there is a range of problem sizes where the wavelet tree provides
-  faster access).
+In the table below it is compared to using an array of u8`s. In that
+case there is a range of problem sizes where the wavelet tree
+provides faster random access.
 
 
 |          N | u8 array | wtree2 |
