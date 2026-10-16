@@ -358,7 +358,7 @@ Elias delta array, encoding 1, ... 1000000
 
 ### **wtree2**
 
-Wavelet tree alphabet sizes of 4 (with ACGT in mind).
+Wavelet tree for alphabet sizes of 4 (with ACGT in mind).
 
 - access
 - selectC
